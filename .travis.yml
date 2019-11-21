@@ -1,25 +1,20 @@
 sudo: false
-
 language: python
-
 python:
-  - "3.7"
-
+- '3.7'
 install:
-  - pip install black pyflakes isort
-  - pip install -e .[tests]
-  - pip freeze
-
+- pip install black pyflakes isort
+- pip install -e .[tests]
+- pip freeze
 script:
-  - pyflakes .
-  - black --check .
-  - isort --check-only --diff --recursive cjwmodule tests
-  - pytest --verbose
-
+- pyflakes .
+- black --check .
+- isort --check-only --diff --recursive cjwmodule tests
+- pytest --verbose
 deploy:
   provider: pypi
-  user: adamhooper
+  user: __token__
   password:
-    secure: "suKZQmAkmtdPIWJkfjI7oU6BoL7qawmGOe21dVwBlgJlLQ/hovsorhy8Ins5rkxnui7k4dRO9djar6XRCPAu2C4045SsKRZXvbjjpD3GUJCuDrLYAFBZ91GFsWX7JhBFumP068KE0XnFYFw5sGCnGYrWwnhnrNSP8ZNnBwQ7Pgb3RK7UPZISuZt2JNudMp7dByigC/yv4B7GnAS7WFh3wPXvAtIrufePrVm0I2rrX+ItXi3+a/un3qccLy+cUNqsH0emrCCHveRHdiCdzG1q3c69h6igjA1rBg1TJlDYtmDUjEZBS02yhX1Q71K+UkoV83IX7GrKa4k/lBXkCciMaFn/MpRrWVgIQNgC/3OGyi3w28IOGQJFUhxGhTyoyxqXKWf6xTyS8QGAZR/YkWMLZI26FBUbpaop8zz8Faxbma289vnWPN33oDnBLCEmzK2l41ChuMz7QpVByX+m/85WmXqmc9V5RM8WaY+oa+ZhCvm2pLHswrRk2CDOWinSfjyaraOTKgvcyLxDwu6Lx7xA9mHAybidfjWP6ZJ6giIE2bos67qVZHSIm5j82u3ksDLfkZJzRtuBfNFyZkuMcO+q1a5WSaRIfTWwnh8XitGBu+z43I1RYW6UZBJRxnML0XULZ8FpvsxFXuRgq+aOxSOMkZk/R4OtIvCMzMg6u+ehxEk="
+    secure: Of328K+Whm/K8JG4PuX1oKyIdtES/q4wYyrmsdAX0d3wYYyEVpPN/bdB5gYrvAH4B9XUgDYkb3OyXb4pd4rJfH1lsbzHKQemikjqEuVkX/JPef/FUkWm7AsHPrKBPVslkk1ldugwlAt042EqrotGaarFb+Kqbr2691pQXoGciLeMDmJh3/UQbh/QTIDZBrsd1+SKs0eXqPU/0NbQTmHXZGC/YrrdYm/20n0YXlJN8nLxQ2GPH9JvHEtZQPIl8MRsz3e/g2WsABVaGsPFDt7a77L9MxDx+PBxlwR2CaTaqORWpBRm/7bComWez3R2g93hcobMcBSOURLBgffIg+3nV8OHG+fXwBqqV/vA/Q847JppdorKGFj0Db+93vRRYAIC8euiEyIYFYcVMDRQsmkUmStVKjZcRieMWi0aq+T/8tMtZcViJnup915cQYBsjYvYhsEtQq4JsHCzjKkPVfZT1y4CXTHyYeJN5+dWq3Syqv4pKmTrwrlg+cyV46jsDCqznVvMzORBLrJr3FpgJpDDke3tdnGTMY1Eo+cKEHJxOKWHtPKT4jgGYT05BdY7e9JfM53F6SqoooDbcxTQGgzBpiruAUFp8rEGUHglTy2tk6hJ82PkpgGI//MgrKSUNZTsVASsrei8qah3OcvweC0RynUM2ppxSSO/mbSx4iJXsBg=
   on:
     tags: true
