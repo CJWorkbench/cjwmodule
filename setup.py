@@ -7,7 +7,7 @@ from setuptools import setup
 from cjwmodule import __version__
 
 # We use the README as the long_description
-readme = open(join(dirname(__file__), "README.rst")).read()
+readme = open(join(dirname(__file__), "README.md")).read()
 
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
 
@@ -19,6 +19,7 @@ setup(
     author_email="adam@adamhooper.com",
     description="Utilities to help build Workbench modules",
     long_description=readme,
+    long_description_content_type="text/markdown",
     license="MIT",
     zip_safe=True,
     packages=["cjwmodule"],
