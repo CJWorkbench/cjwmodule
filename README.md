@@ -3,11 +3,8 @@ Utilities for [CJWorkbench](https://github.com/CJWorkbench/cjworkbench) modules.
 Workbench modules may _optionally_ depend on the latest version of this Python
 package for its handy utilities:
 
-* `cjwmodule.pandas`: Commonly-used code that manipulates
-  [Pandas](https://pandas.pydata.org) `Series` and `DataFrame`s.
-* `cjwmodule.arrow`: Commonly-used code that manipulates
-  [Arrow](https://arrow.apache.org) `Table`s.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
+* `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
 
 
 Developing

@@ -2,7 +2,7 @@ import sys
 
 from os.path import dirname, join
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 from cjwmodule import __version__
 
@@ -22,8 +22,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT",
     zip_safe=True,
-    packages=["cjwmodule"],
-    install_requires=["pandas==0.25.3", "pyarrow==0.15.1"],
+    packages=find_packages(exclude=["tests", "tests.*"]),
     setup_requires=["pytest-runner~=5.2"] if needs_pytest else [],
     tests_require=["pytest~=5.3.0"],
 )
