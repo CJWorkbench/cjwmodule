@@ -314,7 +314,10 @@ def gen_unique_clean_colnames(
                 else:
                     num += 1
 
-                if len(f"{key} {num}") > settings.MAX_BYTES_PER_COLUMN_NAME:
+                if (
+                    len(f"{key} {num}".encode("utf-8"))
+                    > settings.MAX_BYTES_PER_COLUMN_NAME
+                ):
                     is_truncated = True
                     key = _truncate_str_to_max_n_bytes(
                         key, settings.MAX_BYTES_PER_COLUMN_NAME - len(f" {num}")

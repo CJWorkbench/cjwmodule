@@ -26,10 +26,14 @@ def test_clean_fix_unicode():
     )
 
 
-def test_clean_truncate():
+def test_clean_truncate_nix_partial_unicode_character():
     assert clean_colname("acé", settings=MockSettings(3)) == CleanColname(
         "ac", is_truncated=True
     )
+
+
+def test_clean_truncate_allow_full_unicode_character():
+    assert clean_colname("acé", settings=MockSettings(4)) == CleanColname("acé")
 
 
 def test_clean_ascii_before_truncate():
@@ -136,4 +140,19 @@ def test_gen_truncate_during_conflict():
         UniqueCleanColname("ab 9", is_numbered=True, is_truncated=True),
         UniqueCleanColname("a 11", is_numbered=True, is_truncated=True),
         UniqueCleanColname("a 10", is_truncated=True),  # was "a 100"
+    ]
+
+
+def test_gen_truncate_during_conflict_consider_unicode():
+    assert gen_unique_clean_colnames(["aéé"] * 10, settings=MockSettings(5)) == [
+        UniqueCleanColname("aéé"),
+        UniqueCleanColname("aé 2", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 3", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 4", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 5", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 6", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 7", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 8", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("aé 9", is_numbered=True, is_truncated=True),
+        UniqueCleanColname("a 10", is_numbered=True, is_truncated=True),
     ]

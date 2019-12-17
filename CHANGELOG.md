@@ -1,3 +1,9 @@
+v1.1.3 - 2019-12-17
+-------------------
+
+* `gen_unique_clean_colnames()`: consider byte length, not char length, when
+  truncating after adding a number to a column name.
+
 v1.1.2 - 2019-12-16
 -------------------
 
