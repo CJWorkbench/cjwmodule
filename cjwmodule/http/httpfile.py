@@ -133,7 +133,7 @@ async def download(url: str, output_path: Path, **kwargs) -> None:
 
 @contextlib.contextmanager
 def read(
-    httpfile_path: Path
+    httpfile_path: Path,
 ) -> ContextManager[Tuple[Path, str, List[Tuple[str, str]]]]:
     r"""
     Yield `(body: Path, url: str, headers: str)` by parsing `httpfile_path`.
