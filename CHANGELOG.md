@@ -1,3 +1,10 @@
+v1.2.0 - 2020-01-10
+-------------------
+
+* `cjwmodule.http` module, featuring `client.download()` (async with i18n-ready
+  exceptions) and `httpfile.download()` / `httpfile.read()` to write and read
+  "raw" HTTP responses in a Workbench-standard format.
+
 v1.1.3 - 2019-12-17
 -------------------
 
