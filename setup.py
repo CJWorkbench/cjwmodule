@@ -23,6 +23,7 @@ setup(
     license="MIT",
     zip_safe=True,
     packages=find_packages(exclude=["tests", "tests.*"]),
+    install_requires=["httpx~=0.11.0"],
     setup_requires=["pytest-runner~=5.2"] if needs_pytest else [],
-    tests_require=["pytest~=5.3.0"],
+    tests_require=["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
 )
