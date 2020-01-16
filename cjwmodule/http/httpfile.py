@@ -27,7 +27,7 @@ and decompressed, because Python's ecosystem doesn't have nice options for
 storing raw HTTP traffic and dechunking from a file.)
 
 The params in the first line are UTF-8-encoded with no added whitespace
-(so "\r\n" cannot appear); status is ASCII-encoded; headers are
+(so "\r\n" cannot appear); status is latin1-encoded; headers are
 latin1-encoded; the body is raw. (Rationale: each encoding is the content's
 native encoding.)
 
@@ -49,7 +49,16 @@ import re
 import shutil
 import tempfile
 from pathlib import Path
-from typing import BinaryIO, ContextManager, List, Optional, Tuple
+from typing import (
+    Any,
+    BinaryIO,
+    ContextManager,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+)
 
 from . import client
 
@@ -57,25 +66,45 @@ __all__ = ["read", "write", "download", "extract_first_header"]
 _HEADER_PATTERN = re.compile(": *")
 
 
+class HttpfileContents(NamedTuple):
+    parameters: Dict[str, Any]
+    """Dict containing {"url": "http://original.url/before/redirects"}."""
+
+    status_line: str
+    """HTTP response status code and reason (e.g., "200 OK")."""
+
+    headers: List[Tuple[str, str]]
+    """
+    HTTP response headers.
+
+    Read with code like: `extract_first_header(headers, "Header-Name")`.
+    """
+
+    body_path: Path
+    """Path to temporary file containing decoded HTTP response body."""
+
+
 def write(
-    f: BinaryIO,
-    url: str,
+    httpfile_path: Path,
+    parameters: Dict[str, Any],
     status_line: str,
     headers: List[Tuple[str, str]],
     body: BinaryIO,
 ) -> None:
     """
-    Write httpfile-formatted data to `f`.
+    Write httpfile-formatted data to `httpfile_path`.
 
     This module's docstring describes the file format.
+
+    Raise OSError if write to `httpfile_path` fails or read from `body` fails.
     """
     # set gzip mtime=0 so we can write the exact same file given the exact
     # same data. (This helps with testing and versioning.)
-    with gzip.GzipFile(mode="wb", filename="", fileobj=f, mtime=0) as zf:
+    with gzip.GzipFile(httpfile_path, mode="wb", mtime=0) as zf:
         # Write URL -- original URL, not redirected URL
         zf.write(
             json.dumps(
-                {"url": url},  # SECURITY: don't store "headers" secrets
+                parameters,  # SECURITY: don't store "headers" secrets
                 ensure_ascii=False,
                 allow_nan=False,
                 separators=(",", ":"),
@@ -84,7 +113,7 @@ def write(
             + b"\r\n"
         )
         # Write status line
-        zf.write(status_line.encode("utf-8"))
+        zf.write(status_line.encode("latin1"))
         zf.write(b"\r\n")
         # Write response headers.
         for k, v in headers:
@@ -119,6 +148,8 @@ async def download(url: str, output_path: Path, **kwargs) -> None:
     This module's docstring describes the file format.
 
     Raise HttpError if download fails.
+
+    Raise OSError if write fails.
     """
     with tempfile.TemporaryFile() as tf:
         status_code, reason_phrase, headers = await client.download(
@@ -126,20 +157,20 @@ async def download(url: str, output_path: Path, **kwargs) -> None:
         )  # or raise HttpError
         tf.seek(0)
 
-        # The following shouldn't ever error.
-        with output_path.open("wb") as f:
-            write(f, url, "%d %s" % (status_code, reason_phrase), headers, tf)
+        status_line = "%d %s" % (status_code, reason_phrase)
+        write(output_path, {"url": url}, status_line, headers, tf)  # or raise OSError
 
 
 @contextlib.contextmanager
-def read(
-    httpfile_path: Path,
-) -> ContextManager[Tuple[Path, str, List[Tuple[str, str]]]]:
+def read(httpfile_path: Path) -> ContextManager[HttpfileContents]:
     r"""
-    Yield `(body: Path, url: str, headers: str)` by parsing `httpfile_path`.
+    Yield `(body: Path, url, status_line, headers)` by parsing `httpfile_path`.
 
-    The yielded `body` contains the downloaded HTTP body. The body is decoded
-    according to the HTTP server's `Content-Encoding` and `Transfer-Encoding`.
+    The yielded `body` is a Path to a file containing the HTTP body. The body
+    is decoded according to the HTTP server's `Content-Encoding` and
+    `Transfer-Encoding`.
+
+    The yielded `status_line` looks like `"200 OK"`.
 
     The yielded `str` contains HTTP-encoded headers. They are separated by \r\n
     and the final line ends with \r\n. Their `Content-Encoding`,
@@ -149,13 +180,12 @@ def read(
     """
     with tempfile.NamedTemporaryFile(prefix="body-") as body_f:
         with httpfile_path.open("rb") as f, gzip.GzipFile(mode="rb", fileobj=f) as zf:
-            # read params (line 1)
-            fetch_params_json = zf.readline()
-            fetch_params = json.loads(fetch_params_json)
-            url = fetch_params["url"]
+            # read parameters (line 1)
+            parameters_json = zf.readline()
+            parameters = json.loads(parameters_json)
 
-            # read and skip status (line 2)
-            zf.readline()
+            # read status (line 2)
+            status_line = zf.readline().decode("latin1").strip()
 
             # read headers (lines ending in "\r\n" plus one final "\r\n")
             headers = []
@@ -174,7 +204,7 @@ def read(
             body_f.flush()
 
         # Yield
-        yield Path(body_f.name), url, headers
+        yield HttpfileContents(parameters, status_line, headers, Path(body_f.name))
 
 
 def extract_first_header(headers: List[Tuple[str, str]], header: str) -> Optional[str]:

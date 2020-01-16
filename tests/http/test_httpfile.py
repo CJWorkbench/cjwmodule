@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import gzip
+import io
 import itertools
 import tempfile
 import threading
@@ -14,8 +15,6 @@ from typing import AsyncContextManager, Iterator, List, Tuple, Union
 import pytest
 
 from cjwmodule.http import HttpError, httpfile
-
-pytestmark = pytest.mark.asyncio
 
 
 @dataclass(frozen=True)
@@ -112,6 +111,7 @@ def http_server():
         yield http_server
 
 
+@pytest.mark.asyncio
 class TestDownload:
     @contextlib.asynccontextmanager
     async def download(self, url, **kwargs) -> AsyncContextManager[Path]:
@@ -162,7 +162,7 @@ class TestDownload:
             assert b"\r\nCjw-Original-content-encoding: gzip\r\n" in gzip.decompress(
                 path.read_bytes()
             )
-            with httpfile.read(path) as (body_path, url, headers):
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
                 assert body_path.read_bytes() == body
                 assert headers == [
                     ("content-type", "text/csv; charset=utf-8"),
@@ -188,7 +188,7 @@ class TestDownload:
             assert b"\r\nCjw-Original-content-encoding: deflate\r\n" in gzip.decompress(
                 path.read_bytes()
             )
-            with httpfile.read(path) as (body_path, url, headers):
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
                 assert body_path.read_bytes() == body
                 assert headers == [
                     ("content-type", "text/csv; charset=utf-8"),
@@ -209,7 +209,7 @@ class TestDownload:
                 b"\r\nCjw-Original-transfer-encoding: chunked\r\n"
                 in gzip.decompress(path.read_bytes())
             )
-            with httpfile.read(path) as (body_path, url, headers):
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
                 assert body_path.read_bytes() == b"A,B\nx,y\nz,a"
                 assert headers == [
                     ("content-type", "text/csv; charset=utf-8"),
@@ -243,7 +243,7 @@ class TestDownload:
             )
         )
         async with self.download(url1) as path:
-            with httpfile.read(path) as (body_path, url, headers):
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
                 assert body_path.read_bytes() == b"A,B\n1,2"
         assert http_server.requested_paths == ["/url1.csv", "/url2.csv", "/url3.csv"]
 
@@ -274,3 +274,151 @@ class TestDownload:
             "TODO_i18n",
             {"text": "Error during HTTP request: DecodingError"},
         )
+
+
+class TestRead:
+    def test_happy_path(self):
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            path.write_bytes(
+                gzip.compress(
+                    b"".join(
+                        [
+                            b'{"url":"http://example.com/hello"}\r\n',
+                            b"200 OK\r\n",
+                            b"content-type: text/plain; charset=utf-8\r\n",
+                            b"content-disposition: inline\r\n",
+                            b"\r\n",
+                            b"Some text",
+                        ]
+                    )
+                )
+            )
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
+                assert parameters == {"url": "http://example.com/hello"}
+                assert status_line == "200 OK"
+                assert headers == [
+                    ("content-type", "text/plain; charset=utf-8"),
+                    ("content-disposition", "inline"),
+                ]
+                assert body_path.read_bytes() == b"Some text"
+
+    def test_latin1_headers(self):
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            path.write_bytes(
+                gzip.compress(
+                    b"".join(
+                        [
+                            b'{"url":"http://example.com/hello"}\r\n',
+                            b"200 OK\r\n",
+                            b"content-disposition: attachment; filename=caf\xe9\r\n",
+                            b"\r\n",
+                            b"Some text",
+                        ]
+                    )
+                )
+            )
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
+                assert headers == [("content-disposition", "attachment; filename=café")]
+
+    def test_special_headers(self):
+        # Content-Length doesn't get stored in the httpfile format, because it
+        # would be ambiguous. (It does not specify the number of bytes of body.
+        # That's because httpfile stores *decoded* body, and it stores headers
+        # as passed over HTTP.)
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            path.write_bytes(
+                gzip.compress(
+                    b'{"url":"http://example.com/hello"}\r\n'
+                    b"200 OK\r\n"
+                    b"Cjw-Original-content-length: 9\r\n"
+                    b"\r\n"
+                    b"Some text"
+                )
+            )
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
+                assert headers == [("content-length", "9")]
+
+
+class TestWrite:
+    def test_prefix_special_headers(self):
+        # Content-Length doesn't get stored in the httpfile format, because it
+        # would be ambiguous. (It does not specify the number of bytes of body.
+        # That's because httpfile stores *decoded* body, and it stores headers
+        # as passed over HTTP.)
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            httpfile.write(
+                tf.name,
+                {"url": "http://example.com/hello"},
+                "200 OK",
+                [
+                    ("transfer-encoding", "chunked"),
+                    ("content-encoding", "gzip"),
+                    ("content-length", "3"),
+                ],
+                io.BytesIO(b"\x00\x01\x02"),
+            )
+            assert gzip.decompress(path.read_bytes()) == (
+                b'{"url":"http://example.com/hello"}\r\n'
+                b"200 OK\r\n"
+                b"Cjw-Original-transfer-encoding: chunked\r\n"
+                b"Cjw-Original-content-encoding: gzip\r\n"
+                b"Cjw-Original-content-length: 3\r\n"
+                b"\r\n"
+                b"\x00\x01\x02"
+            )
+
+    def test_ignore_most_headers(self):
+        # a header like "ETag", "Date" or "Last-Modified" is unreliable. It
+        # doesn't reliably indicate new data from the server. On the flipside,
+        # it _does_ mean that two files won't compare as equivalent. So we
+        # nix these headers.
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            httpfile.write(
+                path,
+                {"url": "http://example.com/hello"},
+                "200 OK",
+                [
+                    ("date", "Wed, 21 Oct 2015 07:28:00 GMT"),
+                    ("server", "custom-server 0.1"),
+                    ("ETag", "some-etag"),
+                ],
+                io.BytesIO(b"\x00\x01\x02"),
+            )
+            assert gzip.decompress(path.read_bytes()) == (
+                b'{"url":"http://example.com/hello"}\r\n'
+                b"200 OK\r\n"
+                b"server: custom-server 0.1\r\n"
+                b"\r\n"
+                b"\x00\x01\x02"
+            )
+
+    def test_ignore_most_headers(self):
+        # a header like "ETag", "Date" or "Last-Modified" is unreliable. It
+        # doesn't reliably indicate new data from the server. On the flipside,
+        # it _does_ mean that two files won't compare as equivalent. So we
+        # nix these headers.
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            httpfile.write(
+                path,
+                {"url": "http://example.com/hello"},
+                "200 OK",
+                [
+                    ("date", "Wed, 21 Oct 2015 07:28:00 GMT"),
+                    ("server", "custom-server 0.1"),
+                    ("ETag", "some-etag"),
+                ],
+                io.BytesIO(b"\x00\x01\x02"),
+            )
+            assert gzip.decompress(path.read_bytes()) == (
+                b'{"url":"http://example.com/hello"}\r\n'
+                b"200 OK\r\n"
+                b"server: custom-server 0.1\r\n"
+                b"\r\n"
+                b"\x00\x01\x02"
+            )
