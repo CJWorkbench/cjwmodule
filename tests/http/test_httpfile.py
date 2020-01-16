@@ -396,29 +396,3 @@ class TestWrite:
                 b"\r\n"
                 b"\x00\x01\x02"
             )
-
-    def test_ignore_most_headers(self):
-        # a header like "ETag", "Date" or "Last-Modified" is unreliable. It
-        # doesn't reliably indicate new data from the server. On the flipside,
-        # it _does_ mean that two files won't compare as equivalent. So we
-        # nix these headers.
-        with tempfile.NamedTemporaryFile() as tf:
-            path = Path(tf.name)
-            httpfile.write(
-                path,
-                {"url": "http://example.com/hello"},
-                "200 OK",
-                [
-                    ("date", "Wed, 21 Oct 2015 07:28:00 GMT"),
-                    ("server", "custom-server 0.1"),
-                    ("ETag", "some-etag"),
-                ],
-                io.BytesIO(b"\x00\x01\x02"),
-            )
-            assert gzip.decompress(path.read_bytes()) == (
-                b'{"url":"http://example.com/hello"}\r\n'
-                b"200 OK\r\n"
-                b"server: custom-server 0.1\r\n"
-                b"\r\n"
-                b"\x00\x01\x02"
-            )

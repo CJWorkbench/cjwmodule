@@ -1,3 +1,8 @@
+v1.2.1 - 2020-01-16
+-------------------
+
+* Test and bugfix `cjwmodule.http.httpfile.read()` and `.write()`.
+
 v1.2.0 - 2020-01-10
 -------------------
 
