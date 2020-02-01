@@ -1,10 +1,8 @@
+from cjwmodule.i18n.cjwmodule import trans
 from cjwmodule.i18n import I18nMessage
 
+
 __all__ = ["HttpError"]
-
-
-def TODO_i18n(text: str) -> I18nMessage:
-    return I18nMessage("TODO_i18n", {"text": text})
 
 
 class HttpError(Exception):
@@ -14,24 +12,33 @@ class HttpError(Exception):
 
     @property
     def i18n_message(self) -> I18nMessage:
-        return TODO_i18n(self.args[0])
+        return I18nMessage("TODO_i18n", {"text": self.args[0]}, "cjwmodule")
 
 
 class HttpErrorTimeout(HttpError):
-    def __init__(self):
-        return super().__init__("HTTP request timed out.")
+    # override
+    @property
+    def i18n_message(self) -> I18nMessage:
+        return trans("http.errors.HttpErrorTimeout", "HTTP request timed out.")
+    
 
 
 class HttpErrorInvalidUrl(HttpError):
-    def __init__(self):
-        return super().__init__(
+    # override
+    @property
+    def i18n_message(self) -> I18nMessage:
+        return trans(
+            "http.errors.HttpErrorInvalidUrl", 
             "Invalid URL. Please supply a valid URL, starting with http:// or https://."
         )
 
 
 class HttpErrorTooManyRedirects(HttpError):
-    def __init__(self):
-        return super().__init__(
+    # override
+    @property
+    def i18n_message(self) -> I18nMessage:
+        return trans(
+            "http.errors.HttpErrorTooManyRedirects", 
             "HTTP server(s) redirected us too many times. Please try a different URL."
         )
 
@@ -43,9 +50,13 @@ class HttpErrorNotSuccess(HttpError):
     # override
     @property
     def i18n_message(self) -> I18nMessage:
-        return TODO_i18n(
-            "Error from server: HTTP %d %s"
-            % (self.response.status_code, self.response.reason_phrase)
+        return trans(
+            "http.errors.HttpErrorNotSuccess", 
+            "Error from server: HTTP {status_code} {description}",
+            {
+                "status_code": self.response.status_code, 
+                "description": self.response.reason_phrase
+            }
         )
 
 
@@ -53,8 +64,12 @@ class HttpErrorGeneric(HttpError):
     # override
     @property
     def i18n_message(self) -> I18nMessage:
-        return TODO_i18n(
-            "Error during HTTP request: %s" % type(self.__cause__).__name__
+        return trans(
+            "http.errors.HttpErrorGeneric", 
+            "Error during HTTP request: {error}",
+            {
+                "error": type(self.__cause__).__name__
+            }
         )
 
 
