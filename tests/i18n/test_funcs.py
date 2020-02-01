@@ -6,4 +6,8 @@ def test_trans_happy_path():
         "errors.allNull",
         "The column “{column}” must contain non-null values.",
         {"column": "A"},
-    ) == i18n.I18nMessage("errors.allNull", {"column": "A"})
+    ) == i18n.I18nMessage(
+        "errors.allNull", 
+        {"column": "A"}, 
+        "module"
+    )

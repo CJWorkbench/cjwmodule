@@ -2,7 +2,7 @@ from collections import namedtuple
 
 __all__ = ["I18nMessage"]
 
-I18nMessage = namedtuple("I18nMessage", ["id", "arguments"])
+I18nMessage = namedtuple("I18nMessage", ["id", "arguments", "source"])
 """
 A message for Workbench to translate.
 
@@ -15,4 +15,6 @@ manipulate ``.po`` files.
 :type id: str
 :param arguments: Keyword arguments for the message.
 :type arguments: Dict[str, Union[int, float, str]]
+:param source: Indication of where the message is coming from (`"module"` or `"cjwmodule"`).
+:type source: str
 """

@@ -7,7 +7,7 @@ __all__ = ["trans"]
 
 def trans(id: str, default: str, args: Dict[str, Any] = {}) -> I18nMessage:
     """
-    Build an I18nMessage.
+    Build an I18nMessage for a module.
 
     Use ``trans()`` rather than building a :py:class:`I18nMessage` directly.
     Workbench's i18n tooling parses ``trans()`` calls to maintain translation
@@ -34,4 +34,4 @@ def trans(id: str, default: str, args: Dict[str, Any] = {}) -> I18nMessage:
     :param args: Values to interpolate into the message. (e.g.,
                  ``{"column": "A"}```
     """
-    return I18nMessage(id, args)
+    return I18nMessage(id, args, "module")
