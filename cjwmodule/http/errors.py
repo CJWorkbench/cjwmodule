@@ -4,7 +4,7 @@ __all__ = ["HttpError"]
 
 
 def TODO_i18n(text: str) -> I18nMessage:
-    return I18nMessage("TODO_i18n", {"text": text})
+    return I18nMessage("TODO_i18n", {"text": text}, "cjwmodule")
 
 
 class HttpError(Exception):
