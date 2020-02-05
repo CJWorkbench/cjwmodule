@@ -1,0 +1,5 @@
+basepath = cjwmodule/i18n
+
+[[paths]]
+  reference = "en.po"
+  l10n = "{locale}.po"

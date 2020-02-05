@@ -13,7 +13,8 @@ Developing
 
 1. Write a failing unit test in `tests/`
 2. Make it pass by editing code in `cjwmodule/`
-3. Submit a pull request
+3. `black cjwmodule tests && isort --recursive cjwmodule tests`
+4. Submit a pull request
 
 Be very, very, very careful to preserve a consistent API. Workbench will
 upgrade this dependency without module authors' explicit consent. Add new
