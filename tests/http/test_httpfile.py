@@ -222,10 +222,8 @@ class TestDownload:
             await httpfile.download(http_server.build_url("/not-found"), Path())
         assert cm.value.i18n_message == (
             "http.errors.HttpErrorNotSuccess",
-            {
-                "status_code": 404, 
-                "description": 'Not Found'
-            }
+            {"status_code": 404, "description": "Not Found"},
+            "cjwmodule",
         )
 
     async def test_invalid_url(self):
@@ -274,10 +272,9 @@ class TestDownload:
             async with self.download(url):
                 pass
         assert cm.value.i18n_message == (
-            "http.errors.HttpErrorGeneric", 
-            {
-                "error": "DecodingError"
-            }
+            "http.errors.HttpErrorGeneric",
+            {"error": "DecodingError"},
+            "cjwmodule",
         )
 
 
