@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 from os.path import dirname, join
 
@@ -17,6 +19,7 @@ setup(
     author="Adam Hooper",
     author_email="adam@adamhooper.com",
     description="Utilities to help build Workbench modules",
+    include_package_data=True,
     long_description=readme,
     long_description_content_type="text/markdown",
     license="MIT",
