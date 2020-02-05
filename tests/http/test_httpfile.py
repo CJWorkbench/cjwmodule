@@ -222,7 +222,6 @@ class TestDownload:
         assert cm.value.i18n_message == (
             "TODO_i18n",
             {"text": "Error from server: HTTP 404 Not Found"},
-            "cjwmodule",
         )
 
     async def test_invalid_url(self):
@@ -273,7 +272,6 @@ class TestDownload:
         assert cm.value.i18n_message == (
             "TODO_i18n",
             {"text": "Error during HTTP request: DecodingError"},
-            "cjwmodule",
         )
 
 
