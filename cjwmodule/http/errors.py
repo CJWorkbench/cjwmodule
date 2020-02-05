@@ -10,7 +10,11 @@ class HttpError(Exception):
 
     @property
     def i18n_message(self) -> I18nMessage:
-        return ("TODO_i18n", {"text": self.args[0]})
+        """A message descrbing the error to the user. 
+        
+        Must be overriden by subclasses.
+        """
+        raise RuntimeError("Not implemented")
 
 
 class HttpErrorTimeout(HttpError):
