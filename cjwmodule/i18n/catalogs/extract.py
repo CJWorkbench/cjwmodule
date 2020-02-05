@@ -6,7 +6,7 @@ import re
 from io import BytesIO
 from typing import Any, Dict, Generator, List, Tuple
 
-from babel.messages.catalog import Catalog, Message
+from babel.messages.catalog import Catalog
 from babel.messages.extract import (
     check_and_call_extract_file,
     extract_from_dir,
@@ -16,9 +16,6 @@ from babel.messages.pofile import read_po, write_po
 
 from cjwmodule.i18n.locales import default_locale_id, supported_locale_ids
 from cjwmodule.settings import ROOT_DIR
-
-default_locale_id = "en"
-supported_locale_ids = ["en", "el"]
 
 logger = logging.getLogger(__name__)
 
