@@ -222,7 +222,7 @@ class TestDownload:
             await httpfile.download(http_server.build_url("/not-found"), Path())
         assert cm.value.i18n_message == (
             "http.errors.HttpErrorNotSuccess",
-            {"status_code": 404, "description": "Not Found"},
+            {"status_code": 404, "reason": "Not Found"},
             "cjwmodule",
         )
 
@@ -273,7 +273,7 @@ class TestDownload:
                 pass
         assert cm.value.i18n_message == (
             "http.errors.HttpErrorGeneric",
-            {"error": "DecodingError"},
+            {"type": "DecodingError"},
             "cjwmodule",
         )
 

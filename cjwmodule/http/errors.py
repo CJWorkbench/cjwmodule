@@ -14,7 +14,7 @@ class HttpError(Exception):
         
         Must be overriden by subclasses.
         """
-        raise RuntimeError("Not implemented")
+        raise NotImplementedError()
 
 
 class HttpErrorTimeout(HttpError):
@@ -55,10 +55,10 @@ class HttpErrorNotSuccess(HttpError):
     def i18n_message(self) -> I18nMessage:
         return _trans_cjwmodule(
             "http.errors.HttpErrorNotSuccess",
-            "Error from server: HTTP {status_code} {description}",
+            "Error from server: HTTP {status_code} {reason}",
             {
                 "status_code": self.response.status_code,
-                "description": self.response.reason_phrase,
+                "reason": self.response.reason_phrase,
             },
         )
 
@@ -69,8 +69,8 @@ class HttpErrorGeneric(HttpError):
     def i18n_message(self) -> I18nMessage:
         return _trans_cjwmodule(
             "http.errors.HttpErrorGeneric",
-            "Error during HTTP request: {error}",
-            {"error": type(self.__cause__).__name__},
+            "Error during HTTP request: {type}",
+            {"type": type(self.__cause__).__name__},
         )
 
 
