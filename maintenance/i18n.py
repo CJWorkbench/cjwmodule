@@ -6,7 +6,7 @@ import re
 from io import BytesIO
 from typing import Any, Dict, Generator, List, Tuple
 
-from babel.messages.catalog import Catalog
+from babel.messages.catalog import Catalog, Message
 from babel.messages.extract import (
     check_and_call_extract_file,
     extract_from_dir,
@@ -66,7 +66,8 @@ def catalog_path(locale_id: str) -> pathlib.Path:
     return pathlib.Path(ROOT_DIR) / "i18n" / f"{locale_id}.po"
 
 
-def extract():
+def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
+
     mappings = [(ROOT_DIR, [("**.py", _extract_python)], {})]
     pot_catalog = Catalog(default_locale_id)
 
@@ -131,15 +132,32 @@ def extract():
                     default_messages[message.id] = default_message
                     message.auto_comments.remove(comment)
 
-    _update_catalog(default_locale_id, pot_catalog, default_messages)
+    return pot_catalog, default_messages
+
+
+def extract():
+    pot_catalog, default_messages = extract_to_pot_catalog()
+    catalog = _update_catalog(default_locale_id, pot_catalog, default_messages)
+    write_po_catalog(default_locale_id, catalog)
     for locale_id in supported_locale_ids:
         if locale_id != default_locale_id:
-            _update_catalog(locale_id, pot_catalog, {})
+            catalog = _update_catalog(locale_id, pot_catalog, {})
+            write_po_catalog(locale_id, catalog)
+
+
+def check():
+    pot_catalog, default_messages = extract_to_pot_catalog()
+    catalog = _update_catalog(default_locale_id, pot_catalog, default_messages)
+    check_catalog(default_locale_id, catalog)
+    for locale_id in supported_locale_ids:
+        if locale_id != default_locale_id:
+            catalog = _update_catalog(locale_id, pot_catalog, {})
+            check_catalog(locale_id, catalog)
 
 
 def _update_catalog(
     locale_id: str, pot_catalog: Catalog, default_messages: Dict[str, str]
-):
+) -> Catalog:
     try:
         with open(catalog_path(locale_id), "rb") as po:
             catalog = read_po(po)
@@ -167,6 +185,10 @@ def _update_catalog(
         if message.id and not pot_catalog.get(message.id):
             message.locations = []
 
+    return catalog
+
+
+def write_po_catalog(locale_id: str, catalog: Catalog):
     with open(catalog_path(locale_id), "wb") as po_file:
         logger.info("writing PO file for %s to %s", locale_id, po_file)
         write_po(
@@ -174,5 +196,76 @@ def _update_catalog(
         )
 
 
+def check_catalog(locale_id: str, catalog: Catalog):
+    try:
+        with open(catalog_path(locale_id), "rb") as po:
+            old_catalog = read_po(po)
+    except FileNotFoundError:
+        old_catalog = Catalog(locale_id)
+
+    assert_catalogs_are_same(catalog, old_catalog)
+
+
+def assert_catalogs_are_same(catalog_1: Catalog, catalog_2: Catalog):
+    assert (
+        catalog_1.locale == catalog_2.locale
+    ), "Catalogs have different locales: %s, %s" % (catalog_1.locale, catalog_2.locale)
+    assert_catalog_inclusion(catalog_1, catalog_2)
+    assert_catalog_inclusion(catalog_2, catalog_1)
+
+
+def assert_catalog_inclusion(catalog: Catalog, other_catalog: Catalog):
+    for message in catalog:
+        if message.id:  # ignore header
+            other_message = other_catalog.get(message.id)
+            assert other_message, (
+                "Message %s is not contained in both catalogs" % message.id
+            )
+            assert_messages_are_same(message, other_message)
+
+
+def assert_messages_are_same(message: Message, other_message: Message):
+    assert message.id == other_message.id, "Messages have different ids: %s, %s" % (
+        message.id,
+        other_message.id,
+    )
+    assert message.string == other_message.string, (
+        "Messages with id %s have different string: %s, %s"
+        % (message.id, message.string, other_message.string)
+    )
+    assert message.flags == other_message.flags, (
+        "Messages with id %s have different flags: %s, %s"
+        % (message.id, message.flags, other_message.flags)
+    )
+    assert message.auto_comments == other_message.auto_comments, (
+        "Messages with id %s have different auto_comments: %s, %s"
+        % (message.id, message.auto_comments, other_message.auto_comments)
+    )
+    assert message.user_comments == other_message.user_comments, (
+        "Messages with id %s have different user_comments: %s, %s"
+        % (message.id, message.user_comments, other_message.user_comments)
+    )
+    assert message.locations == other_message.locations, (
+        "Messages with id %s have different locations: %s, %s"
+        % (message.id, message.locations, other_message.locations)
+    )
+
+
 if __name__ == "__main__":
-    extract()
+    import sys
+
+    mode = sys.argv[1] if len(sys.argv) > 1 else None
+
+    if mode == "extract":
+        extract()
+    elif mode == "check":
+        check()
+    else:
+        print(
+            """
+Subcommands:
+    extract   Parses the code of cjwmodule for calls to _trans_cjwmodule and extracts new messages to cjwmodule/i18n/{locale}.po
+    
+    check     Checks that running extract would leave all catalogs unchanged
+"""
+        )
