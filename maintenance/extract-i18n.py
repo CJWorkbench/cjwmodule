@@ -14,12 +14,14 @@ from babel.messages.extract import (
 )
 from babel.messages.pofile import read_po, write_po
 
-from cjwmodule.i18n.locales import default_locale_id, supported_locale_ids
-from cjwmodule.settings import ROOT_DIR
-
 logger = logging.getLogger(__name__)
 
 _default_message_re = re.compile(r"\s*default-message:\s*(.*)\s*")
+
+
+default_locale_id = "en"
+supported_locale_ids = ["en", "el"]
+ROOT_DIR = pathlib.Path(os.path.abspath(__file__)).parent.parent / "cjwmodule"
 
 
 def _extract_python(
@@ -62,10 +64,6 @@ def _extract_python(
 
 def catalog_path(locale_id: str) -> pathlib.Path:
     return pathlib.Path(ROOT_DIR) / "i18n" / f"{locale_id}.po"
-
-
-def pot_catalog_path() -> pathlib.Path:
-    return pathlib.Path(ROOT_DIR) / "i18n" / f"{default_locale_id}.pot"
 
 
 def extract():
@@ -122,16 +120,6 @@ def extract():
                 auto_comments=comments,
                 context=context,
             )
-
-    with open(pot_catalog_path(), "wb") as pot_file:
-        logger.info("writing PO template file to %s", pot_file)
-        write_po(
-            pot_file,
-            pot_catalog,
-            ignore_obsolete=True,
-            width=10000000,  # we set a huge value for width, so that special comments do not wrap
-            omit_header=True,
-        )
 
     default_messages = {}
     for message in pot_catalog:

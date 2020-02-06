@@ -24,8 +24,13 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT",
     zip_safe=True,
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_packages(
+        exclude=["tests", "tests.*", "maintenance", "maintenance.*"]
+    ),
     install_requires=["httpx~=0.11.0"],
     setup_requires=["pytest-runner~=5.2"] if needs_pytest else [],
-    extras_require={"tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"]},
+    extras_require={
+        "tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
+        "maintenance": ["babel=*"],
+    },
 )
