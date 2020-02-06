@@ -131,51 +131,41 @@ def extract():
                     default_messages[message.id] = default_message
                     message.auto_comments.remove(comment)
 
-    _update_default_catalog(pot_catalog, default_messages)
+    _update_catalog(default_locale_id, pot_catalog, default_messages)
     for locale_id in supported_locale_ids:
         if locale_id != default_locale_id:
-            _update_catalog(locale_id, pot_catalog)
+            _update_catalog(locale_id, pot_catalog, {})
 
 
-def _update_default_catalog(pot_catalog: Catalog, default_messages: Dict[str, str]):
-    catalog = Catalog(default_locale_id)
-    for message in pot_catalog:
-        if message.id:
-            catalog.add(
-                message.id,
-                string=default_messages.get(message.id, ""),
-                auto_comments=message.auto_comments,
-                user_comments=message.user_comments,
-                flags=message.flags,
-                locations=message.locations,
-            )
-
-    with open(catalog_path(default_locale_id), "wb") as po_file:
-        logger.info("writing PO file for %s to %s", default_locale_id, po_file)
-        write_po(
-            po_file, catalog,
-        )
-
-
-def _update_catalog(locale_id: str, pot_catalog: Catalog):
+def _update_catalog(
+    locale_id: str, pot_catalog: Catalog, default_messages: Dict[str, str]
+):
     try:
         with open(catalog_path(locale_id), "rb") as po:
-            old_catalog = read_po(po)
+            catalog = read_po(po)
     except FileNotFoundError:
-        old_catalog = Catalog(locale_id)
+        catalog = Catalog(locale_id)
 
-    catalog = Catalog(locale_id)
     for message in pot_catalog:
         if message.id:
-            old_message = old_catalog.get(message.id)
+            old_message = catalog.get(message.id)
+            new_string = default_messages.get(
+                message.id, old_message.string if old_message else ""
+            )
+            if old_message:
+                catalog.delete(message.id)
             catalog.add(
                 message.id,
-                string=old_message.string if old_message else "",
+                string=new_string,
                 auto_comments=message.auto_comments,
                 user_comments=message.user_comments,
                 flags=message.flags,
                 locations=message.locations,
             )
+
+    for message in catalog:
+        if message.id and not pot_catalog.get(message.id):
+            message.locations = []
 
     with open(catalog_path(locale_id), "wb") as po_file:
         logger.info("writing PO file for %s to %s", locale_id, po_file)
