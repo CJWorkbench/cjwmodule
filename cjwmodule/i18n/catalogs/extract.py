@@ -118,7 +118,7 @@ def extract():
             pot_catalog.add(
                 message,
                 None,
-                [(filepath, lineno)],
+                [(os.path.relpath(filepath, ROOT_DIR), lineno)],
                 auto_comments=comments,
                 context=context,
             )

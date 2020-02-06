@@ -1,25 +1,25 @@
 #. default-message: HTTP request timed out.
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:24
+#: http/errors.py:24
 msgid "http.errors.HttpErrorTimeout"
 msgstr ""
 
 #. default-message: Invalid URL. Please supply a valid URL, starting with http:// or https://.
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:33
+#: http/errors.py:33
 msgid "http.errors.HttpErrorInvalidUrl"
 msgstr ""
 
 #. default-message: HTTP server(s) redirected us too many times. Please try a different URL.
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:43
+#: http/errors.py:43
 msgid "http.errors.HttpErrorTooManyRedirects"
 msgstr ""
 
 #. default-message: Error from server: HTTP {status_code} {description}
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:56
+#: http/errors.py:56
 msgid "http.errors.HttpErrorNotSuccess"
 msgstr ""
 
 #. default-message: Error during HTTP request: {error}
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:73
+#: http/errors.py:73
 msgid "http.errors.HttpErrorGeneric"
 msgstr ""
 

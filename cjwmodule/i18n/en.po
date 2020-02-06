@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-02-05 23:38+0200\n"
+"POT-Creation-Date: 2020-02-06 10:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,23 +19,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:24
+#: http/errors.py:24
 msgid "http.errors.HttpErrorTimeout"
 msgstr "HTTP request timed out."
 
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:33
+#: http/errors.py:33
 msgid "http.errors.HttpErrorInvalidUrl"
 msgstr "Invalid URL. Please supply a valid URL, starting with http:// or https://."
 
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:43
+#: http/errors.py:43
 msgid "http.errors.HttpErrorTooManyRedirects"
 msgstr "HTTP server(s) redirected us too many times. Please try a different URL."
 
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:56
+#: http/errors.py:56
 msgid "http.errors.HttpErrorNotSuccess"
 msgstr "Error from server: HTTP {status_code} {description}"
 
-#: /home/giorgio93p/Code/Radical/workbench/cjwmodule/cjwmodule/http/errors.py:73
+#: http/errors.py:73
 msgid "http.errors.HttpErrorGeneric"
 msgstr "Error during HTTP request: {error}"
 
