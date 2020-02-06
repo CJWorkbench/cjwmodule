@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-from distutils.command.sdist import sdist
 from os.path import dirname, join
 
 from setuptools import find_packages, setup
@@ -12,14 +11,6 @@ from cjwmodule import __version__
 readme = open(join(dirname(__file__), "README.md")).read()
 
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
-
-
-class _sdist(sdist):
-    def run(self):
-        from maintenance import i18n
-
-        i18n.check()
-        super().run()
 
 
 setup(
@@ -43,5 +34,4 @@ setup(
         "tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
         "maintenance": ["babel~=2.8.0"],
     },
-    cmdclass={"sdist": _sdist},
 )
