@@ -41,7 +41,7 @@ setup(
     setup_requires=["pytest-runner~=5.2"] if needs_pytest else [],
     extras_require={
         "tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
-        "maintenance": ["babel==*"],
+        "maintenance": ["babel~=2.8.0"],
     },
     cmdclass={"sdist": _sdist},
 )

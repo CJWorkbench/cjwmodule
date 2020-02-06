@@ -4,13 +4,14 @@ python:
 - '3.7'
 install:
 - pip install black pyflakes isort
-- pip install -e .[tests]
+- pip install -e .[tests,maintenance]
 - pip freeze
 script:
 - pyflakes .
 - black --check .
 - isort --check-only --diff --recursive cjwmodule tests
 - pytest --verbose
+- python3 maintenance/i18n.py check
 deploy:
   provider: pypi
   user: __token__
