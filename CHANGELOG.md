@@ -1,7 +1,13 @@
+v1.3.1 - 2020-02-06
+-------------------
+
+* Fix packaging.
+
+
 v1.3.0 - 2020-02-06
 -------------------
 
-* Generate some i18n-ready messages.
+* Generate some i18n-ready messages. [BROKEN]
 
 v1.2.2 - 2020-02-05
 -------------------
