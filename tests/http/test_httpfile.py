@@ -221,8 +221,9 @@ class TestDownload:
         with pytest.raises(HttpError.NotSuccess) as cm:
             await httpfile.download(http_server.build_url("/not-found"), Path())
         assert cm.value.i18n_message == (
-            "TODO_i18n",
-            {"text": "Error from server: HTTP 404 Not Found"},
+            "http.errors.HttpErrorNotSuccess",
+            {"status_code": 404, "reason": "Not Found"},
+            "cjwmodule",
         )
 
     async def test_invalid_url(self):
@@ -271,8 +272,9 @@ class TestDownload:
             async with self.download(url):
                 pass
         assert cm.value.i18n_message == (
-            "TODO_i18n",
-            {"text": "Error during HTTP request: DecodingError"},
+            "http.errors.HttpErrorGeneric",
+            {"type": "DecodingError"},
+            "cjwmodule",
         )
 
 
