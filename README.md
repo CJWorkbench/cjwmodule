@@ -20,6 +20,33 @@ Be very, very, very careful to preserve a consistent API. Workbench will
 upgrade this dependency without module authors' explicit consent. Add new
 features; fix bugs. Never change functionality.
 
+I18n
+====
+
+Strings in `cjwmodule` can be marked for translation using `cjwmodule.i18n._trans_cjwmodule`.
+Each translation message must have a (unique) ID. ICU is supported for the content.
+For example,
+```python
+from cjwmodule.i18n import _trans_cjwmodule
+
+err = "Error 404"
+
+_trans_cjwmodule(
+    "greatapi.exception.message",
+    "Something is wrong: {error}",
+    {"error": err}
+)
+```
+Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an error/warning or quick fix is expected.
+
+Calls to `_trans_cjwmodule` can (and must) be automatically parsed to create `cjwmodule`'s `po` message files.
+This is accomplished by
+```
+python maintenance/i18n.py extract
+```
+
+For backwards compatibility, *messages in `cjwmodule`'s `po` files are never deleted*!
+
 
 Publishing
 ==========
