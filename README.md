@@ -6,7 +6,7 @@ package for its handy utilities:
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
 * `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
-* `cjwmodule.util.tests`: Functions to help in unit testing.
+* `cjwmodule.testing`: Functions to help in unit testing.
 
 Developing
 ==========
@@ -54,15 +54,15 @@ python maintenance/i18n.py extract
 
 ### Unit testing
 
-In case a `_trans_cjwmodule` invocation needs to be unit tested, you can use `cjwmodule.util.tests.CjwmoduleI18nMessage` 
+In case a `_trans_cjwmodule` invocation needs to be unit tested, you can use `cjwmodule.testing.i18n.cjwmodule_i18n_message` 
 in a manner similar to the following: 
 
 ```python
-from cjwmodule.util.tests import CjwmoduleI18nMessage
+from cjwmodule.testing.i18n import cjwmodule_i18n_message
 import with_arguments, without_arguments
 
-assert with_arguments == CjwmoduleI18nMessage("greatapi.exception.message", {"error": "Error 404"})
-assert without_arguments == CjwmoduleI18nMessage("greatapi.exception.general")
+assert with_arguments == cjwmodule_i18n_message("greatapi.exception.message", {"error": "Error 404"})
+assert without_arguments == cjwmodule_i18n_message("greatapi.exception.general")
 ```
 
 ### Message deprecation
