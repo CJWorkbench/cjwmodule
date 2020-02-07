@@ -5,8 +5,8 @@ package for its handy utilities:
 
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
-* `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
 * `cjwmodule.testing`: Functions to help in unit testing.
+* `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
 
 Developing
 ==========
@@ -24,6 +24,7 @@ I18n
 ====
 
 ### Marking strings for translation
+
 Strings in `cjwmodule` can be marked for translation using `cjwmodule.i18n._trans_cjwmodule`.
 Each translation message must have a (unique) ID. ICU is supported for the content.
 For example,
@@ -46,6 +47,7 @@ without_arguments = _trans_cjwmodule(
 Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an error/warning or quick fix is expected.
 
 ### Creating `po` catalogs
+
 Calls to `_trans_cjwmodule` can (and must) be automatically parsed to create `cjwmodule`'s `po` message files.
 This is accomplished by
 ```
