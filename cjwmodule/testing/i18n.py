@@ -2,10 +2,10 @@ from typing import Dict, Union
 
 from cjwmodule import i18n
 
-__all__ = ["I18nMessage"]
+__all__ = ["i18n_message", "cjwmodule_i18n_message"]
 
 
-def I18nMessage(id: str, arguments: Dict[str, Union[int, float, str]] = {}):
+def i18n_message(id: str, arguments: Dict[str, Union[int, float, str]] = {}):
     """The result of calling `i18n.trans`
 
     :param id: String message ID (e.g., "errors.notEnoughColumns").
@@ -16,7 +16,7 @@ def I18nMessage(id: str, arguments: Dict[str, Union[int, float, str]] = {}):
     return i18n.I18nMessage(id, arguments, "module")
 
 
-def CjwmoduleI18nMessage(id: str, arguments: Dict[str, Union[int, float, str]] = {}):
+def cjwmodule_i18n_message(id: str, arguments: Dict[str, Union[int, float, str]] = {}):
     """An i18n message that is returned from calling an internal `cjwmodule` helper.
 
     :param id: String message ID (e.g., "errors.notEnoughColumns").

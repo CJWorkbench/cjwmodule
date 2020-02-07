@@ -15,7 +15,7 @@ from typing import AsyncContextManager, Iterator, List, Tuple, Union
 import pytest
 
 from cjwmodule.http import HttpError, httpfile
-from cjwmodule.util.tests import CjwmoduleI18nMessage
+from cjwmodule.testing.i18n import cjwmodule_i18n_message
 
 
 @dataclass(frozen=True)
@@ -221,7 +221,7 @@ class TestDownload:
         http_server.mock_response(MockHttpResponse(404))
         with pytest.raises(HttpError.NotSuccess) as cm:
             await httpfile.download(http_server.build_url("/not-found"), Path())
-        assert cm.value.i18n_message == CjwmoduleI18nMessage(
+        assert cm.value.i18n_message == cjwmodule_i18n_message(
             "http.errors.HttpErrorNotSuccess",
             {"status_code": 404, "reason": "Not Found"},
         )
@@ -271,7 +271,7 @@ class TestDownload:
         with pytest.raises(HttpError.Generic) as cm:
             async with self.download(url):
                 pass
-        assert cm.value.i18n_message == CjwmoduleI18nMessage(
+        assert cm.value.i18n_message == cjwmodule_i18n_message(
             "http.errors.HttpErrorGeneric", {"type": "DecodingError"},
         )
 
