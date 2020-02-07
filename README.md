@@ -6,6 +6,7 @@ package for its handy utilities:
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
 * `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
+* `cjwmodule.util.tests`: Functions to help in unit testing.
 
 Developing
 ==========
