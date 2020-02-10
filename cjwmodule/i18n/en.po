@@ -59,12 +59,9 @@ msgstr ""
 "each (see “{column_name}”)} one{Truncated column name “{column_name}” to "
 "{n_bytes} bytes}}"
 
-#. default-message: {n_columns, plural, other{Fixed # column names with invalid
-#. Unicode (see “{column_name}”)} one{Fixed Unicode in column name
-#. “{column_name}”}}
 #: util/colnames.py:438 util/colnames.py:449
 msgid "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames"
 msgstr ""
-"{n_columns, plural, other{Renamed # duplicate column names (see "
-"“{column_name}”)} one{Renamed duplicate column name “{column_name}”}}"
+"{n_columns, plural, other{Fixed # column names with invalid Unicode (see "
+"“{column_name}”)} one{Fixed Unicode in column name “{column_name}”}}"
 
