@@ -39,3 +39,7 @@ msgstr ""
 msgid "http.errors.HttpErrorGeneric"
 msgstr ""
 
+#: util/rowranges.py:13
+msgid "badParam.rows.invalidRange"
+msgstr ""
+

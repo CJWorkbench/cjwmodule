@@ -39,3 +39,7 @@ msgstr "Error from server: HTTP {status_code} {reason}"
 msgid "http.errors.HttpErrorGeneric"
 msgstr "Error during HTTP request: {type}"
 
+#: util/rowranges.py:13
+msgid "badParam.rows.invalidRange"
+msgstr "Rows must look like \"1-2\", \"5\" or \"1-2, 5\"; got \"{value}\""
+
