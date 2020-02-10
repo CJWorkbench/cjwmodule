@@ -125,12 +125,15 @@ def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
     default_messages = {}
     for message in pot_catalog:
         if message.id:
+            actual_comments = []
             for comment in message.auto_comments:
                 match = re.match(_default_message_re, comment)
                 if match:
                     default_message = match.group(1).strip()
                     default_messages[message.id] = default_message
-                    message.auto_comments.remove(comment)
+                else:
+                    actual_comments.append(comment)
+            message.auto_comments = actual_comments
 
     return pot_catalog, default_messages
 
