@@ -39,3 +39,22 @@ msgstr ""
 msgid "http.errors.HttpErrorGeneric"
 msgstr ""
 
+#: util/colnames.py:400
+msgid "util.colnames.gen_unique_clean_colnames.warnings.removedSpecialCharactersFromColumnNames"
+msgstr ""
+
+#: util/colnames.py:412
+msgid "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames"
+msgstr ""
+
+#: util/colnames.py:423
+msgid "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames"
+msgstr ""
+
+#. default-message: {n_columns, plural, other{Fixed # column names with invalid
+#. Unicode (see “{column_name}”)} one{Fixed Unicode in column name
+#. “{column_name}”}}
+#: util/colnames.py:438 util/colnames.py:449
+msgid "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames"
+msgstr ""
+
