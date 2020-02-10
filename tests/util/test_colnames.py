@@ -167,16 +167,16 @@ def test_gen_and_warn_calls_clean():
         ["ab�c"],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.removedSpecialCharactersFromColumnNames",
-                {"n_columns": 1, "column_name": "ab�c"},
+                "util.colnames.warnings.ascii_cleaned",
+                {"n_columns": 1, "first_colname": "ab�c"},
             ),
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
-                {"n_columns": 1, "column_name": "ab�c", "n_bytes": 6},
+                "util.colnames.warnings.truncated",
+                {"n_columns": 1, "first_colname": "ab�c", "n_bytes": 6},
             ),
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 1, "column_name": "ab�c"},
+                "util.colnames.warnings.unicode_fixed",
+                {"n_columns": 1, "first_colname": "ab�c"},
             ),
         ],
     )
@@ -194,8 +194,8 @@ def test_gen_and_warn_add_number():
         ["A", "A 2", "A 3"],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 2, "column_name": "A 2"},
+                "util.colnames.warnings.numbered",
+                {"n_columns": 2, "first_colname": "A 2"},
             ),
         ],
     )
@@ -206,8 +206,8 @@ def test_gen_and_warn_add_number_that_does_not_overwrite_existing_number():
         ["A", "A 3", "A 2"],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 1, "column_name": "A 3"},
+                "util.colnames.warnings.numbered",
+                {"n_columns": 1, "first_colname": "A 3"},
             ),
         ],
     )
@@ -218,8 +218,8 @@ def test_gen_and_warn_name_default_columns():
         ["Column 1", "Column 2"],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
-                {"n_columns": 2, "column_name": "Column 1"},
+                "util.colnames.warnings.default",
+                {"n_columns": 2, "first_colname": "Column 1"},
             ),
         ],
     )
@@ -230,12 +230,12 @@ def test_gen_and_warn_name_default_columns_without_conflict():
         ["Column 2", "Column 4", "Column 3"],  # this 3 is "reserved"
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
-                {"n_columns": 2, "column_name": "Column 4"},
+                "util.colnames.warnings.default",
+                {"n_columns": 2, "first_colname": "Column 4"},
             ),
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 1, "column_name": "Column 4"},
+                "util.colnames.warnings.numbered",
+                {"n_columns": 1, "first_colname": "Column 4"},
             ),
         ],
     )
@@ -248,12 +248,12 @@ def test_gen_and_warn_avoid_existing_names():
         ["Column 4", "foo 2"],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
-                {"n_columns": 1, "column_name": "Column 4"},
+                "util.colnames.warnings.default",
+                {"n_columns": 1, "first_colname": "Column 4"},
             ),
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 2, "column_name": "Column 4"},
+                "util.colnames.warnings.numbered",
+                {"n_columns": 2, "first_colname": "Column 4"},
             ),
         ],
     )
@@ -291,12 +291,12 @@ def test_gen_and_warn_truncate_during_conflict():
         ],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
-                {"n_columns": 10, "column_name": "ab 2", "n_bytes": 4},
+                "util.colnames.warnings.truncated",
+                {"n_columns": 10, "first_colname": "ab 2", "n_bytes": 4},
             ),
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 9, "column_name": "ab 2"},
+                "util.colnames.warnings.numbered",
+                {"n_columns": 9, "first_colname": "ab 2"},
             ),
         ],
     )
@@ -309,12 +309,12 @@ def test_gen_and_warn_truncate_during_conflict_consider_unicode():
         ["aéé", "aé 2", "aé 3", "aé 4", "aé 5", "aé 6", "aé 7", "aé 8", "aé 9", "a 10"],
         [
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
-                {"n_columns": 9, "column_name": "aé 2", "n_bytes": 5},
+                "util.colnames.warnings.truncated",
+                {"n_columns": 9, "first_colname": "aé 2", "n_bytes": 5},
             ),
             cjwmodule_i18n_message(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                {"n_columns": 9, "column_name": "aé 2"},
+                "util.colnames.warnings.numbered",
+                {"n_columns": 9, "first_colname": "aé 2"},
             ),
         ],
     )

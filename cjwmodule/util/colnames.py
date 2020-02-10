@@ -352,8 +352,8 @@ def gen_unique_clean_colnames_and_warn(
     """
     Create UniqueCleanColname instances to help append columns to a table.
 
-    Warn if ASCII-cleaning names, renaming duplicates, truncating names or
-    auto-generating names.
+    Warn if ASCII-cleaning names, renaming duplicates, truncating names,
+    auto-generating names, or fixing Unicode errors.
     """
     n_ascii_cleaned = 0
     first_ascii_cleaned = None
@@ -398,37 +398,43 @@ def gen_unique_clean_colnames_and_warn(
     if n_ascii_cleaned > 0:
         warnings.append(
             _trans_cjwmodule(
-                "util.colnames.gen_unique_clean_colnames.warnings.removedSpecialCharactersFromColumnNames",
-                "Removed special characters from "
-                "{n_columns, plural,"
-                " other{# column names (see “{column_name}”)}"
-                " one{column name “{column_name}”}"
-                "}",
-                {"n_columns": n_ascii_cleaned, "column_name": first_ascii_cleaned},
+                "util.colnames.warnings.ascii_cleaned",
+                (
+                    "Removed special characters from "
+                    "{n_columns, plural,"
+                    " other{# column names (see “{first_colname}”)}"
+                    " one{column name “{first_colname}”}"
+                    "}"
+                ),
+                {"n_columns": n_ascii_cleaned, "first_colname": first_ascii_cleaned},
             )
         )
     if n_default > 0:
         warnings.append(
             _trans_cjwmodule(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
-                "{n_columns, plural,"
-                " other{Renamed # column names because values were empty (see “{column_name}”)}"
-                " one{Renamed column name “{column_name}” because value was empty}"
-                "}",
-                {"n_columns": n_default, "column_name": first_default},
+                "util.colnames.warnings.default",
+                (
+                    "{n_columns, plural,"
+                    " other{Renamed # column names because values were empty (see “{first_colname}”)}"
+                    " one{Renamed column name “{first_colname}” because value was empty}"
+                    "}"
+                ),
+                {"n_columns": n_default, "first_colname": first_default},
             )
         )
     if n_truncated > 0:
         warnings.append(
             _trans_cjwmodule(
-                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
-                "{n_columns, plural,"
-                " other{Truncated # column names to {n_bytes} bytes each (see “{column_name}”)}"
-                " one{Truncated column name “{column_name}” to {n_bytes} bytes}"
-                "}",
+                "util.colnames.warnings.truncated",
+                (
+                    "{n_columns, plural,"
+                    " other{Truncated # column names to {n_bytes} bytes each (see “{first_colname}”)}"
+                    " one{Truncated column name “{first_colname}” to {n_bytes} bytes}"
+                    "}"
+                ),
                 {
                     "n_columns": n_truncated,
-                    "column_name": first_truncated,
+                    "first_colname": first_truncated,
                     "n_bytes": settings.MAX_BYTES_PER_COLUMN_NAME,
                 },
             )
@@ -436,23 +442,27 @@ def gen_unique_clean_colnames_and_warn(
     if n_numbered > 0:
         warnings.append(
             _trans_cjwmodule(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                "{n_columns, plural,"
-                " other{Renamed # duplicate column names (see “{column_name}”)}"
-                " one{Renamed duplicate column name “{column_name}”}"
-                "}",
-                {"n_columns": n_numbered, "column_name": first_numbered},
+                "util.colnames.warnings.numbered",
+                (
+                    "{n_columns, plural,"
+                    " other{Renamed # duplicate column names (see “{first_colname}”)}"
+                    " one{Renamed duplicate column name “{first_colname}”}"
+                    "}"
+                ),
+                {"n_columns": n_numbered, "first_colname": first_numbered},
             )
         )
     if n_unicode_fixed > 0:
         warnings.append(
             _trans_cjwmodule(
-                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
-                "{n_columns, plural,"
-                " other{Fixed # column names with invalid Unicode (see “{column_name}”)}"
-                " one{Fixed Unicode in column name “{column_name}”}"
-                "}",
-                {"n_columns": n_unicode_fixed, "column_name": first_unicode_fixed},
+                "util.colnames.warnings.unicode_fixed",
+                (
+                    "{n_columns, plural,"
+                    " other{Fixed # column names with invalid Unicode (see “{first_colname}”)}"
+                    " one{Fixed Unicode in column name “{first_colname}”}"
+                    "}"
+                ),
+                {"n_columns": n_unicode_fixed, "first_colname": first_unicode_fixed},
             )
         )
 
