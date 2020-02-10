@@ -160,6 +160,11 @@ def test_gen_truncate_during_conflict_consider_unicode():
     ]
 
 
+# To save maintenance hassle, tests for `gen_unique_clean_colnames_and_warn()` assume
+# `gen_unique_colnames_and_warn() is implemented in terms of `gen_unique_colnames()`.
+# So we only need to test the warning logic, not the generate-unique-colnames logic.
+
+
 def test_gen_and_warn_no_warnings():
     assert gen_unique_clean_colnames_and_warn(["A", "A 1", "A 2"])[1] == []
 
