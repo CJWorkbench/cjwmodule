@@ -7,6 +7,7 @@ package for its handy utilities:
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
 * `cjwmodule.testing`: Functions to help in unit testing.
 * `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
+* `cjwmodule.util.rowranges`: Functions to help build parse row ranges.
 
 Developing
 ==========
