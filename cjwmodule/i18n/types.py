@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-__all__ = ["I18nMessage"]
+__all__ = ["I18nMessage", "InternationalizedException"]
 
 I18nMessage = namedtuple("I18nMessage", ["id", "arguments", "source"])
 """
@@ -18,3 +18,15 @@ manipulate ``.po`` files.
 :param source: Indication of where the message is coming from (`"module"` or `"cjwmodule"`).
 :type source: str
 """
+
+
+class InternationalizedException(Exception):
+    """ An exception that can be converted to an `I18nMessage`."""
+
+    @property
+    def i18n_message(self) -> I18nMessage:
+        """A message descrbing the error to the user.
+
+        Must be overriden by subclasses.
+        """
+        raise NotImplementedError()

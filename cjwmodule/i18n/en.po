@@ -19,23 +19,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: http/errors.py:24
+#: http/errors.py:16
 msgid "http.errors.HttpErrorTimeout"
 msgstr "HTTP request timed out."
 
-#: http/errors.py:33
+#: http/errors.py:25
 msgid "http.errors.HttpErrorInvalidUrl"
 msgstr "Invalid URL. Please supply a valid URL, starting with http:// or https://."
 
-#: http/errors.py:43
+#: http/errors.py:35
 msgid "http.errors.HttpErrorTooManyRedirects"
 msgstr "HTTP server(s) redirected us too many times. Please try a different URL."
 
-#: http/errors.py:56
+#: http/errors.py:48
 msgid "http.errors.HttpErrorNotSuccess"
 msgstr "Error from server: HTTP {status_code} {reason}"
 
-#: http/errors.py:73
+#: http/errors.py:65
 msgid "http.errors.HttpErrorGeneric"
 msgstr "Error during HTTP request: {type}"
 

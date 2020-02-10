@@ -1,20 +1,12 @@
-from cjwmodule.i18n import I18nMessage, _trans_cjwmodule
+from cjwmodule.i18n import I18nMessage, InternationalizedException, _trans_cjwmodule
 
 __all__ = ["HttpError"]
 
 
-class HttpError(Exception):
+class HttpError(InternationalizedException):
     """
     An HTTP request did not complete.
     """
-
-    @property
-    def i18n_message(self) -> I18nMessage:
-        """A message descrbing the error to the user. 
-        
-        Must be overriden by subclasses.
-        """
-        raise NotImplementedError()
 
 
 class HttpErrorTimeout(HttpError):
