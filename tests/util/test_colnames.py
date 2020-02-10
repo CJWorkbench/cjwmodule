@@ -160,161 +160,83 @@ def test_gen_truncate_during_conflict_consider_unicode():
     ]
 
 
-def test_gen_and_warn_calls_clean():
-    assert gen_unique_clean_colnames_and_warn(
-        ["ab\n\ud800cd"], settings=MockSettings(6)
-    ) == (
-        ["ab�c"],
+def test_gen_and_warn_no_warnings():
+    assert gen_unique_clean_colnames_and_warn(["A", "A 1", "A 2"])[1] == []
+
+
+def test_gen_and_warn_unicode_fixed():
+    assert gen_unique_clean_colnames_and_warn(["ab\ud800cd"])[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.unicode_fixed",
+                {"n_columns": 1, "first_colname": "ab�cd"},
+            ),
+        ]
+    )
+
+
+def test_gen_and_warn_ascii_cleaned():
+    assert gen_unique_clean_colnames_and_warn(["ab\n"])[1] == (
         [
             cjwmodule_i18n_message(
                 "util.colnames.warnings.ascii_cleaned",
-                {"n_columns": 1, "first_colname": "ab�c"},
+                {"n_columns": 1, "first_colname": "ab"},
             ),
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.truncated",
-                {"n_columns": 1, "first_colname": "ab�c", "n_bytes": 6},
-            ),
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.unicode_fixed",
-                {"n_columns": 1, "first_colname": "ab�c"},
-            ),
-        ],
+        ]
     )
 
 
-def test_gen_and_warn_number_1_is_unique():
-    assert gen_unique_clean_colnames_and_warn(["A", "A 1", "A 2"]) == (
-        ["A", "A 1", "A 2"],
-        [],
-    )
-
-
-def test_gen_and_warn_add_number():
-    assert gen_unique_clean_colnames_and_warn(["A", "A", "A"]) == (
-        ["A", "A 2", "A 3"],
+def test_gen_and_warn_numbered():
+    assert gen_unique_clean_colnames_and_warn(["A", "A", "A"])[1] == (
         [
             cjwmodule_i18n_message(
                 "util.colnames.warnings.numbered",
                 {"n_columns": 2, "first_colname": "A 2"},
             ),
-        ],
+        ]
     )
 
 
-def test_gen_and_warn_add_number_that_does_not_overwrite_existing_number():
-    assert gen_unique_clean_colnames_and_warn(["A", "A", "A 2"]) == (
-        ["A", "A 3", "A 2"],
-        [
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.numbered",
-                {"n_columns": 1, "first_colname": "A 3"},
-            ),
-        ],
-    )
-
-
-def test_gen_and_warn_name_default_columns():
-    assert gen_unique_clean_colnames_and_warn(["", ""]) == (
-        ["Column 1", "Column 2"],
+def test_gen_and_warn_default():
+    assert gen_unique_clean_colnames_and_warn(["", ""])[1] == (
         [
             cjwmodule_i18n_message(
                 "util.colnames.warnings.default",
                 {"n_columns": 2, "first_colname": "Column 1"},
             ),
-        ],
+        ]
     )
 
 
-def test_gen_and_warn_name_default_columns_without_conflict():
-    assert gen_unique_clean_colnames_and_warn(["Column 2", "", ""]) == (
-        ["Column 2", "Column 4", "Column 3"],  # this 3 is "reserved"
-        [
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.default",
-                {"n_columns": 2, "first_colname": "Column 4"},
-            ),
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.numbered",
-                {"n_columns": 1, "first_colname": "Column 4"},
-            ),
-        ],
-    )
-
-
-def test_gen_and_warn_avoid_existing_names():
+def test_gen_and_warn_truncated():
     assert gen_unique_clean_colnames_and_warn(
-        ["", "foo"], existing_names=["Column 3", "foo"]
-    ) == (
-        ["Column 4", "foo 2"],
-        [
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.default",
-                {"n_columns": 1, "first_colname": "Column 4"},
-            ),
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.numbered",
-                {"n_columns": 2, "first_colname": "Column 4"},
-            ),
-        ],
-    )
-
-
-def test_gen_and_warn_truncate_during_conflict():
-    assert gen_unique_clean_colnames_and_warn(
-        [
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "abcd",
-            "a 100",
-        ],
-        settings=MockSettings(4),
-    ) == (
-        [
-            "abcd",
-            "ab 2",
-            "ab 3",
-            "ab 4",
-            "ab 5",
-            "ab 6",
-            "ab 7",
-            "ab 8",
-            "ab 9",
-            "a 11",
-            "a 10",  # was "a 100"
-        ],
+        ["A Column", "B Column"], settings=MockSettings(4)
+    )[1] == (
         [
             cjwmodule_i18n_message(
                 "util.colnames.warnings.truncated",
-                {"n_columns": 10, "first_colname": "ab 2", "n_bytes": 4},
+                {"n_columns": 2, "first_colname": "A Co", "n_bytes": 4},
             ),
-            cjwmodule_i18n_message(
-                "util.colnames.warnings.numbered",
-                {"n_columns": 9, "first_colname": "ab 2"},
-            ),
-        ],
+        ]
     )
 
 
-def test_gen_and_warn_truncate_during_conflict_consider_unicode():
+def test_gen_and_warn_multiple():
     assert gen_unique_clean_colnames_and_warn(
-        ["aéé"] * 10, settings=MockSettings(5)
-    ) == (
-        ["aéé", "aé 2", "aé 3", "aé 4", "aé 5", "aé 6", "aé 7", "aé 8", "aé 9", "a 10"],
+        ["A Column", "B Column", "ab", "ab", "ab", "",], settings=MockSettings(6),
+    )[1] == (
         [
             cjwmodule_i18n_message(
+                "util.colnames.warnings.default",
+                {"n_columns": 1, "first_colname": "Column 6"},
+            ),
+            cjwmodule_i18n_message(
                 "util.colnames.warnings.truncated",
-                {"n_columns": 9, "first_colname": "aé 2", "n_bytes": 5},
+                {"n_columns": 2, "first_colname": "A Colu", "n_bytes": 6},
             ),
             cjwmodule_i18n_message(
                 "util.colnames.warnings.numbered",
-                {"n_columns": 9, "first_colname": "aé 2"},
+                {"n_columns": 2, "first_colname": "ab 2"},
             ),
-        ],
+        ]
     )
