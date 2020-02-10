@@ -1,9 +1,11 @@
+from cjwmodule.testing.i18n import cjwmodule_i18n_message
 from cjwmodule.util.colnames import (
     CleanColname,
     Settings,
     UniqueCleanColname,
     clean_colname,
     gen_unique_clean_colnames,
+    gen_unique_clean_colnames_and_warn,
 )
 
 
@@ -156,3 +158,163 @@ def test_gen_truncate_during_conflict_consider_unicode():
         UniqueCleanColname("aé 9", is_numbered=True, is_truncated=True),
         UniqueCleanColname("a 10", is_numbered=True, is_truncated=True),
     ]
+
+
+def test_gen_and_warn_calls_clean():
+    assert gen_unique_clean_colnames_and_warn(
+        ["ab\n\ud800cd"], settings=MockSettings(6)
+    ) == (
+        ["ab�c"],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.removedSpecialCharactersFromColumnNames",
+                {"n_columns": 1, "column_name": "ab�c"},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
+                {"n_columns": 1, "column_name": "ab�c", "n_bytes": 6},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 1, "column_name": "ab�c"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_number_1_is_unique():
+    assert gen_unique_clean_colnames_and_warn(["A", "A 1", "A 2"]) == (
+        ["A", "A 1", "A 2"],
+        [],
+    )
+
+
+def test_gen_and_warn_add_number():
+    assert gen_unique_clean_colnames_and_warn(["A", "A", "A"]) == (
+        ["A", "A 2", "A 3"],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 2, "column_name": "A 2"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_add_number_that_does_not_overwrite_existing_number():
+    assert gen_unique_clean_colnames_and_warn(["A", "A", "A 2"]) == (
+        ["A", "A 3", "A 2"],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 1, "column_name": "A 3"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_name_default_columns():
+    assert gen_unique_clean_colnames_and_warn(["", ""]) == (
+        ["Column 1", "Column 2"],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
+                {"n_columns": 2, "column_name": "Column 1"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_name_default_columns_without_conflict():
+    assert gen_unique_clean_colnames_and_warn(["Column 2", "", ""]) == (
+        ["Column 2", "Column 4", "Column 3"],  # this 3 is "reserved"
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
+                {"n_columns": 2, "column_name": "Column 4"},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 1, "column_name": "Column 4"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_avoid_existing_names():
+    assert gen_unique_clean_colnames_and_warn(
+        ["", "foo"], existing_names=["Column 3", "foo"]
+    ) == (
+        ["Column 4", "foo 2"],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames",
+                {"n_columns": 1, "column_name": "Column 4"},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 2, "column_name": "Column 4"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_truncate_during_conflict():
+    assert gen_unique_clean_colnames_and_warn(
+        [
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "abcd",
+            "a 100",
+        ],
+        settings=MockSettings(4),
+    ) == (
+        [
+            "abcd",
+            "ab 2",
+            "ab 3",
+            "ab 4",
+            "ab 5",
+            "ab 6",
+            "ab 7",
+            "ab 8",
+            "ab 9",
+            "a 11",
+            "a 10",  # was "a 100"
+        ],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
+                {"n_columns": 10, "column_name": "ab 2", "n_bytes": 4},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 9, "column_name": "ab 2"},
+            ),
+        ],
+    )
+
+
+def test_gen_and_warn_truncate_during_conflict_consider_unicode():
+    assert gen_unique_clean_colnames_and_warn(
+        ["aéé"] * 10, settings=MockSettings(5)
+    ) == (
+        ["aéé", "aé 2", "aé 3", "aé 4", "aé 5", "aé 6", "aé 7", "aé 8", "aé 9", "a 10"],
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames",
+                {"n_columns": 9, "column_name": "aé 2", "n_bytes": 5},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames",
+                {"n_columns": 9, "column_name": "aé 2"},
+            ),
+        ],
+    )
