@@ -19,28 +19,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-msgid "util.colnames.gen_unique_clean_colnames.warnings.removedSpecialCharactersFromColumnNames"
-msgstr ""
-"Removed special characters from {n_columns, plural, other{# column names "
-"(see “{column_name}”)} one{column name “{column_name}”}}"
-
-msgid "util.colnames.gen_unique_clean_colnames.warnings.renamedEmptyColumnNames"
-msgstr ""
-"{n_columns, plural, other{Renamed # column names because values were "
-"empty (see “{column_name}”)} one{Renamed column name “{column_name}” "
-"because value was empty}}"
-
-msgid "util.colnames.gen_unique_clean_colnames.warnings.truncatedColumnNames"
-msgstr ""
-"{n_columns, plural, other{Truncated # column names to {n_bytes} bytes "
-"each (see “{column_name}”)} one{Truncated column name “{column_name}” to "
-"{n_bytes} bytes}}"
-
-msgid "util.colnames.gen_unique_clean_colnames.warnings.renamedDuplicateColumnNames"
-msgstr ""
-"{n_columns, plural, other{Fixed # column names with invalid Unicode (see "
-"“{column_name}”)} one{Fixed Unicode in column name “{column_name}”}}"
-
 #: http/errors.py:24
 msgid "http.errors.HttpErrorTimeout"
 msgstr "HTTP request timed out."
