@@ -5,6 +5,7 @@ from os.path import dirname, join
 
 from setuptools import find_packages, setup
 
+import maintenance.i18n
 from cjwmodule import __version__
 
 # We use the README as the long_description
@@ -34,4 +35,5 @@ setup(
         "tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
         "maintenance": ["babel~=2.8.0"],
     },
+    cmdclass={"extract_messages": maintenance.i18n.ExtractMessagesCommand,},
 )

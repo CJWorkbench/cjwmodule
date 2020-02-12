@@ -42,7 +42,7 @@ Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an 
 Calls to `_trans_cjwmodule` can (and must) be automatically parsed to create `cjwmodule`'s `po` message files.
 This is accomplished by
 ```
-python maintenance/i18n.py extract
+./setup.py extract_messages
 ```
 
 For backwards compatibility, *messages in `cjwmodule`'s `po` files are never deleted*!
