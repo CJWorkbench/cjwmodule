@@ -5,7 +5,7 @@ from os.path import dirname, join
 
 from setuptools import find_packages, setup
 
-import maintenance.i18n
+import maintenance
 from cjwmodule import __version__
 
 # We use the README as the long_description
