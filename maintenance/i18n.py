@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import distutils.cmd
 import os
 import pathlib
 import re
@@ -232,37 +231,8 @@ def assert_messages_are_same(message: Message, other_message: Message):
     )
 
 
-class ExtractMessagesCommand(distutils.cmd.Command):
-    """A custom command to run i18n-related stuff."""
-
-    description = "extract i18n messages or check if they need extraction"
-    user_options = [
-        # The format is (long option, short option, description).
-        (
-            "check",
-            None,
-            "Check if all messages have been extracted without modifying catalogs",
-        ),
-    ]
-
-    def initialize_options(self):
-        """Set default values for options."""
-        # Each user option must be listed here with their default value.
-        self.check = False
-
-    def finalize_options(self):
-        """Post-process options."""
-
-    def run(self):
-        """Run command."""
-        if self.check:
-            check()
-        else:
-            extract()
-
-
 if __name__ == "__main__":
-    # This enrty point will be deprecated, in favour of using the distutils command above
+    # This enrty point will be deprecated, in favour of using the distutils command in setup.py
     import sys
 
     mode = sys.argv[1] if len(sys.argv) > 1 else None
