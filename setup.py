@@ -35,5 +35,5 @@ setup(
         "tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
         "maintenance": ["babel~=2.8.0"],
     },
-    cmdclass={"extract_messages": maintenance.i18n.ExtractMessagesCommand,},
+    cmdclass={"extract_messages": maintenance.ExtractMessagesCommand,},
 )
