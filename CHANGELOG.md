@@ -1,3 +1,11 @@
+v1.4.0 - 2020-02-14
+-------------------
+
+* Test with Python 3.8.
+* Extract i18n messages with `./setup.py extract_messages`
+* `util.colnames.gen_unique_clean_colnames_and_warn()`: new utility runs
+  `gen_unique_clean_colnames()` and converts warnings to i18n messages.
+
 v1.3.1 - 2020-02-06
 -------------------
 
