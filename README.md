@@ -48,11 +48,14 @@ Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an 
 
 ### Creating `po` catalogs
 
-Calls to `_trans_cjwmodule` can (and must) be automatically parsed to create `cjwmodule`'s `po` message files.
-This is accomplished by
+Calls to `_trans_cjwmodule` can (and must) be parsed to create `cjwmodule`'s `.po` files.
+Update the `.po` files with:
+
 ```
 ./setup.py extract_messages
 ```
+
+The first time you run this, you'll need to install dependencies: `pip3 install .[maintenance]`
 
 ### Unit testing
 
