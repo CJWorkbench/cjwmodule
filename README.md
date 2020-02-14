@@ -5,8 +5,8 @@ package for its handy utilities:
 
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
+* `cjwmodule.testing`: Functions to help in unit testing.
 * `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
-
 
 Developing
 ==========
@@ -23,6 +23,8 @@ features; fix bugs. Never change functionality.
 I18n
 ====
 
+### Marking strings for translation
+
 Strings in `cjwmodule` can be marked for translation using `cjwmodule.i18n._trans_cjwmodule`.
 Each translation message must have a (unique) ID. ICU is supported for the content.
 For example,
@@ -31,19 +33,41 @@ from cjwmodule.i18n import _trans_cjwmodule
 
 err = "Error 404"
 
-_trans_cjwmodule(
+with_arguments = _trans_cjwmodule(
     "greatapi.exception.message",
     "Something is wrong: {error}",
     {"error": err}
 )
+
+without_arguments = _trans_cjwmodule(
+    "greatapi.exception.general",
+    "Something is wrong",
+)
 ```
 Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an error/warning or quick fix is expected.
+
+### Creating `po` catalogs
 
 Calls to `_trans_cjwmodule` can (and must) be automatically parsed to create `cjwmodule`'s `po` message files.
 This is accomplished by
 ```
 python maintenance/i18n.py extract
 ```
+
+### Unit testing
+
+In case a `_trans_cjwmodule` invocation needs to be unit tested, you can use `cjwmodule.testing.i18n.cjwmodule_i18n_message` 
+in a manner similar to the following: 
+
+```python
+from cjwmodule.testing.i18n import cjwmodule_i18n_message
+import with_arguments, without_arguments
+
+assert with_arguments == cjwmodule_i18n_message("greatapi.exception.message", {"error": "Error 404"})
+assert without_arguments == cjwmodule_i18n_message("greatapi.exception.general")
+```
+
+### Message deprecation
 
 For backwards compatibility, *messages in `cjwmodule`'s `po` files are never deleted*!
 
