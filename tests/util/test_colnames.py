@@ -1,9 +1,11 @@
+from cjwmodule.testing.i18n import cjwmodule_i18n_message
 from cjwmodule.util.colnames import (
     CleanColname,
     Settings,
     UniqueCleanColname,
     clean_colname,
     gen_unique_clean_colnames,
+    gen_unique_clean_colnames_and_warn,
 )
 
 
@@ -156,3 +158,90 @@ def test_gen_truncate_during_conflict_consider_unicode():
         UniqueCleanColname("aé 9", is_numbered=True, is_truncated=True),
         UniqueCleanColname("a 10", is_numbered=True, is_truncated=True),
     ]
+
+
+# To save maintenance hassle, tests for `gen_unique_clean_colnames_and_warn()` assume
+# `gen_unique_colnames_and_warn() is implemented in terms of `gen_unique_colnames()`.
+# So we only need to test the warning logic, not the generate-unique-colnames logic.
+
+
+def test_gen_and_warn_no_warnings():
+    assert gen_unique_clean_colnames_and_warn(["A", "A 1", "A 2"])[1] == []
+
+
+def test_gen_and_warn_unicode_fixed():
+    assert gen_unique_clean_colnames_and_warn(["ab\ud800cd"])[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.unicode_fixed",
+                {"n_columns": 1, "first_colname": "ab�cd"},
+            ),
+        ]
+    )
+
+
+def test_gen_and_warn_ascii_cleaned():
+    assert gen_unique_clean_colnames_and_warn(["ab\n"])[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.ascii_cleaned",
+                {"n_columns": 1, "first_colname": "ab"},
+            ),
+        ]
+    )
+
+
+def test_gen_and_warn_numbered():
+    assert gen_unique_clean_colnames_and_warn(["A", "A", "A"])[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.numbered",
+                {"n_columns": 2, "first_colname": "A 2"},
+            ),
+        ]
+    )
+
+
+def test_gen_and_warn_default():
+    assert gen_unique_clean_colnames_and_warn(["", ""])[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.default",
+                {"n_columns": 2, "first_colname": "Column 1"},
+            ),
+        ]
+    )
+
+
+def test_gen_and_warn_truncated():
+    assert gen_unique_clean_colnames_and_warn(
+        ["A Column", "B Column"], settings=MockSettings(4)
+    )[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.truncated",
+                {"n_columns": 2, "first_colname": "A Co", "n_bytes": 4},
+            ),
+        ]
+    )
+
+
+def test_gen_and_warn_multiple():
+    assert gen_unique_clean_colnames_and_warn(
+        ["A Column", "B Column", "ab", "ab", "ab", "",], settings=MockSettings(6),
+    )[1] == (
+        [
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.default",
+                {"n_columns": 1, "first_colname": "Column 6"},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.truncated",
+                {"n_columns": 2, "first_colname": "A Colu", "n_bytes": 6},
+            ),
+            cjwmodule_i18n_message(
+                "util.colnames.warnings.numbered",
+                {"n_columns": 2, "first_colname": "ab 2"},
+            ),
+        ]
+    )

@@ -39,3 +39,23 @@ msgstr "Error from server: HTTP {status_code} {reason}"
 msgid "http.errors.HttpErrorGeneric"
 msgstr "Error during HTTP request: {type}"
 
+#: util/colnames.py:402
+msgid "util.colnames.warnings.ascii_cleaned"
+msgstr ""
+
+#: util/colnames.py:416
+msgid "util.colnames.warnings.default"
+msgstr ""
+
+#: util/colnames.py:429
+msgid "util.colnames.warnings.truncated"
+msgstr ""
+
+#: util/colnames.py:446
+msgid "util.colnames.warnings.numbered"
+msgstr ""
+
+#: util/colnames.py:459
+msgid "util.colnames.warnings.unicode_fixed"
+msgstr ""
+

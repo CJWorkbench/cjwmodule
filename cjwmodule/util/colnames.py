@@ -2,6 +2,8 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
+from cjwmodule.i18n import I18nMessage, _trans_cjwmodule
+
 
 # class Settings(Protocol): TODO py38 from typing import Protocol
 class Settings:
@@ -339,3 +341,129 @@ def gen_unique_clean_colnames(
         )
 
     return ret
+
+
+def gen_unique_clean_colnames_and_warn(
+    names: List[str],
+    *,
+    existing_names: List[str] = [],
+    settings: Settings = DefaultSettings(),
+) -> Tuple[List[str], List[I18nMessage]]:
+    """
+    Create UniqueCleanColname instances to help append columns to a table.
+
+    Warn if ASCII-cleaning names, renaming duplicates, truncating names,
+    auto-generating names, or fixing Unicode errors.
+    """
+    n_ascii_cleaned = 0
+    first_ascii_cleaned = None
+    n_default = 0
+    first_default = None
+    n_truncated = 0
+    first_truncated = None
+    n_numbered = 0
+    first_numbered = None
+    n_unicode_fixed = 0
+    first_unicode_fixed = None
+
+    ret = []
+
+    for uccolname in gen_unique_clean_colnames(
+        names, existing_names=existing_names, settings=settings
+    ):
+        name = uccolname.name
+        ret.append(name)
+        if uccolname.is_ascii_cleaned:
+            if n_ascii_cleaned == 0:
+                first_ascii_cleaned = name
+            n_ascii_cleaned += 1
+        if uccolname.is_default:
+            if n_default == 0:
+                first_default = name
+            n_default += 1
+        if uccolname.is_truncated:
+            if n_truncated == 0:
+                first_truncated = name
+            n_truncated += 1
+        if uccolname.is_numbered:
+            if n_numbered == 0:
+                first_numbered = name
+            n_numbered += 1
+        if uccolname.is_unicode_fixed:
+            if n_unicode_fixed == 0:
+                first_unicode_fixed = name
+            n_unicode_fixed += 1
+
+    warnings = []
+    if n_ascii_cleaned > 0:
+        warnings.append(
+            _trans_cjwmodule(
+                "util.colnames.warnings.ascii_cleaned",
+                (
+                    "Removed special characters from "
+                    "{n_columns, plural,"
+                    " other{# column names (see “{first_colname}”)}"
+                    " one{column name “{first_colname}”}"
+                    "}"
+                ),
+                {"n_columns": n_ascii_cleaned, "first_colname": first_ascii_cleaned},
+            )
+        )
+    if n_default > 0:
+        warnings.append(
+            _trans_cjwmodule(
+                "util.colnames.warnings.default",
+                (
+                    "{n_columns, plural,"
+                    " other{Renamed # column names because values were empty (see “{first_colname}”)}"
+                    " one{Renamed column name “{first_colname}” because value was empty}"
+                    "}"
+                ),
+                {"n_columns": n_default, "first_colname": first_default},
+            )
+        )
+    if n_truncated > 0:
+        warnings.append(
+            _trans_cjwmodule(
+                "util.colnames.warnings.truncated",
+                (
+                    "{n_columns, plural,"
+                    " other{Truncated # column names to {n_bytes} bytes each (see “{first_colname}”)}"
+                    " one{Truncated column name “{first_colname}” to {n_bytes} bytes}"
+                    "}"
+                ),
+                {
+                    "n_columns": n_truncated,
+                    "first_colname": first_truncated,
+                    "n_bytes": settings.MAX_BYTES_PER_COLUMN_NAME,
+                },
+            )
+        )
+    if n_numbered > 0:
+        warnings.append(
+            _trans_cjwmodule(
+                "util.colnames.warnings.numbered",
+                (
+                    "{n_columns, plural,"
+                    " other{Renamed # duplicate column names (see “{first_colname}”)}"
+                    " one{Renamed duplicate column name “{first_colname}”}"
+                    "}"
+                ),
+                {"n_columns": n_numbered, "first_colname": first_numbered},
+            )
+        )
+    if n_unicode_fixed > 0:
+        warnings.append(
+            _trans_cjwmodule(
+                "util.colnames.warnings.unicode_fixed",
+                (
+                    "{n_columns, plural,"
+                    " other{Fixed # column names with invalid Unicode (see “{first_colname}”)}"
+                    " one{Fixed Unicode in column name “{first_colname}”}"
+                    "}"
+                ),
+                {"n_columns": n_unicode_fixed, "first_colname": first_unicode_fixed},
+            )
+        )
+
+    return ret, warnings
