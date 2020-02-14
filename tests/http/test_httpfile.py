@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import AsyncContextManager, Iterator, List, Tuple, Union
 
 import pytest
+
 from cjwmodule.http import HttpError, httpfile
 from cjwmodule.testing.i18n import cjwmodule_i18n_message
 
@@ -271,7 +272,7 @@ class TestDownload:
             async with self.download(url):
                 pass
         assert cm.value.i18n_message == cjwmodule_i18n_message(
-            "http.errors.HttpErrorGeneric", {"type": "DecodingError"},
+            "http.errors.HttpErrorGeneric", {"type": "DecodingError"}
         )
 
 
