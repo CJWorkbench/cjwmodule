@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import AsyncContextManager, Iterator, List, Tuple, Union
 
 import pytest
-
 from cjwmodule.http import HttpError, httpfile
 from cjwmodule.testing.i18n import cjwmodule_i18n_message
 
