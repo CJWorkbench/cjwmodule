@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 import os
 import pathlib
 import re
@@ -13,8 +12,6 @@ from babel.messages.extract import (
     extract_python,
 )
 from babel.messages.pofile import read_po, write_po
-
-logger = logging.getLogger(__name__)
 
 _default_message_re = re.compile(r"\s*default-message:\s*(.*)\s*")
 
@@ -76,22 +73,6 @@ def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
         def callback(filename, method, options):
             if method == "ignore":
                 return
-
-            # If we explicitly provide a full filepath, just use that.
-            # Otherwise, path will be the directory path and filename
-            # is the relative path from that dir to the file.
-            # So we can join those to get the full filepath.
-            if os.path.isfile(path):
-                filepath = path
-            else:
-                filepath = os.path.normpath(os.path.join(path, filename))
-
-            optstr = ""
-            if options:
-                optstr = " (%s)" % ", ".join(
-                    ['%s="%s"' % (k, v) for k, v in options.items()]
-                )
-            logger.info("extracting messages from %s%s", filepath, optstr)
 
         if os.path.isfile(path):
             current_dir = os.getcwd()
@@ -193,7 +174,6 @@ def _update_catalog(
 
 def write_po_catalog(locale_id: str, catalog: Catalog):
     with open(catalog_path(locale_id), "wb") as po_file:
-        logger.info("writing PO file for %s to %s", locale_id, po_file)
         write_po(
             po_file, catalog,
         )
@@ -255,6 +235,7 @@ def assert_messages_are_same(message: Message, other_message: Message):
 
 
 if __name__ == "__main__":
+    # This enrty point will be deprecated, in favour of using the distutils command in setup.py
     import sys
 
     mode = sys.argv[1] if len(sys.argv) > 1 else None
@@ -263,12 +244,3 @@ if __name__ == "__main__":
         extract()
     elif mode == "check":
         check()
-    else:
-        print(
-            """
-Subcommands:
-    extract   Parses the code of cjwmodule for calls to _trans_cjwmodule and extracts new messages to cjwmodule/i18n/{locale}.po
-    
-    check     Checks that running extract would leave all catalogs unchanged
-"""
-        )
