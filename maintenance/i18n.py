@@ -35,7 +35,7 @@ def _extract_python(
     """
     keywords = ["_trans_cjwmodule"]
     comment_tags = ["i18n"]
-    for (message_lineno, funcname, messages, translator_comments,) in extract_python(
+    for (message_lineno, funcname, messages, translator_comments) in extract_python(
         fileobj, keywords, comment_tags, options
     ):
         # `messages` will have all the string parameters to our function
@@ -174,9 +174,7 @@ def _update_catalog(
 
 def write_po_catalog(locale_id: str, catalog: Catalog):
     with open(catalog_path(locale_id), "wb") as po_file:
-        write_po(
-            po_file, catalog,
-        )
+        write_po(po_file, catalog)
 
 
 def check_catalog(locale_id: str, catalog: Catalog):
@@ -232,15 +230,3 @@ def assert_messages_are_same(message: Message, other_message: Message):
         "Messages with id %s have different locations: %s, %s"
         % (message.id, message.locations, other_message.locations)
     )
-
-
-if __name__ == "__main__":
-    # This enrty point will be deprecated, in favour of using the distutils command in setup.py
-    import sys
-
-    mode = sys.argv[1] if len(sys.argv) > 1 else None
-
-    if mode == "extract":
-        extract()
-    elif mode == "check":
-        check()

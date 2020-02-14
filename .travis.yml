@@ -11,7 +11,7 @@ script:
 - black --check .
 - isort --check-only --diff --recursive cjwmodule tests
 - pytest --verbose
-- python3 maintenance/i18n.py check
+- ./setup.py extract_messages --check
 deploy:
   provider: pypi
   user: __token__
