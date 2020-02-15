@@ -39,23 +39,23 @@ msgstr ""
 msgid "http.errors.HttpErrorGeneric"
 msgstr ""
 
-#: util/colnames.py:402
+#: util/colnames.py:400
 msgid "util.colnames.warnings.ascii_cleaned"
 msgstr ""
 
-#: util/colnames.py:416
+#: util/colnames.py:412
 msgid "util.colnames.warnings.default"
 msgstr ""
 
-#: util/colnames.py:429
+#: util/colnames.py:423
 msgid "util.colnames.warnings.truncated"
 msgstr ""
 
-#: util/colnames.py:446
+#: util/colnames.py:438
 msgid "util.colnames.warnings.numbered"
 msgstr ""
 
-#: util/colnames.py:459
+#: util/colnames.py:449
 msgid "util.colnames.warnings.unicode_fixed"
 msgstr ""
 

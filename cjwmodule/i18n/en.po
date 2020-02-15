@@ -39,23 +39,35 @@ msgstr "Error from server: HTTP {status_code} {reason}"
 msgid "http.errors.HttpErrorGeneric"
 msgstr "Error during HTTP request: {type}"
 
-#: util/colnames.py:402
+#: util/colnames.py:400
 msgid "util.colnames.warnings.ascii_cleaned"
 msgstr ""
+"Removed special characters from {n_columns, plural, other{# column names "
+"(see “{first_colname}”)} one{column name “{first_colname}”}}"
 
-#: util/colnames.py:416
+#: util/colnames.py:412
 msgid "util.colnames.warnings.default"
 msgstr ""
+"{n_columns, plural, other{Renamed # column names because values were "
+"empty (see “{first_colname}”)} one{Renamed column name “{first_colname}” "
+"because value was empty}}"
 
-#: util/colnames.py:429
+#: util/colnames.py:423
 msgid "util.colnames.warnings.truncated"
 msgstr ""
+"{n_columns, plural, other{Truncated # column names to {n_bytes} bytes "
+"each (see “{first_colname}”)} one{Truncated column name “{first_colname}”"
+" to {n_bytes} bytes}}"
 
-#: util/colnames.py:446
+#: util/colnames.py:438
 msgid "util.colnames.warnings.numbered"
 msgstr ""
+"{n_columns, plural, other{Renamed # duplicate column names (see "
+"“{first_colname}”)} one{Renamed duplicate column name “{first_colname}”}}"
 
-#: util/colnames.py:459
+#: util/colnames.py:449
 msgid "util.colnames.warnings.unicode_fixed"
 msgstr ""
+"{n_columns, plural, other{Fixed # column names with invalid Unicode (see "
+"“{first_colname}”)} one{Fixed Unicode in column name “{first_colname}”}}"
 
