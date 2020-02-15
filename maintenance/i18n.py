@@ -151,9 +151,15 @@ def _update_catalog(
     for message in pot_catalog:
         if message.id:
             old_message = catalog.get(message.id)
-            new_string = default_messages.get(
-                message.id, old_message.string if old_message else ""
-            )
+            if default_messages:
+                try:
+                    new_string = default_messages[message.id]
+                except KeyError as err:
+                    raise ValueError(
+                        "Missing default message for %s" % message.id
+                    ) from err
+            else:
+                new_string = old_message.string if old_message else ""
             if old_message:
                 catalog.delete(message.id)
             catalog.add(
