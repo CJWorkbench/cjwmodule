@@ -142,15 +142,17 @@ def check():
 def _update_catalog(
     locale_id: str, pot_catalog: Catalog, default_messages: Dict[str, str]
 ) -> Catalog:
-    try:
-        with open(catalog_path(locale_id), "rb") as po:
-            catalog = read_po(po)
-    except FileNotFoundError:
-        catalog = Catalog(locale_id)
+    if not default_messages:
+        try:
+            with open(catalog_path(locale_id), "rb") as po:
+                old_catalog = read_po(po)
+        except FileNotFoundError:
+            old_catalog = Catalog(locale_id)
+
+    catalog = Catalog(locale_id)
 
     for message in pot_catalog:
         if message.id:
-            old_message = catalog.get(message.id)
             if default_messages:
                 try:
                     new_string = default_messages[message.id]
@@ -159,9 +161,8 @@ def _update_catalog(
                         "Missing default message for %s" % message.id
                     ) from err
             else:
+                old_message = old_catalog.get(message.id)
                 new_string = old_message.string if old_message else ""
-            if old_message:
-                catalog.delete(message.id)
             catalog.add(
                 message.id,
                 string=new_string,
@@ -171,16 +172,18 @@ def _update_catalog(
                 locations=message.locations,
             )
 
-    for message in catalog:
-        if message.id and not pot_catalog.get(message.id):
-            message.locations = []
-
     return catalog
 
 
 def write_po_catalog(locale_id: str, catalog: Catalog):
-    with open(catalog_path(locale_id), "wb") as po_file:
-        write_po(po_file, catalog)
+    try:
+        with open(catalog_path(locale_id), "rb") as po:
+            old_catalog = read_po(po)
+    except FileNotFoundError:
+        old_catalog = Catalog(locale_id)
+    if not catalogs_are_same(catalog, old_catalog):
+        with open(catalog_path(locale_id), "wb") as po_file:
+            write_po(po_file, catalog)
 
 
 def check_catalog(locale_id: str, catalog: Catalog):
@@ -191,6 +194,14 @@ def check_catalog(locale_id: str, catalog: Catalog):
         old_catalog = Catalog(locale_id)
 
     assert_catalogs_are_same(catalog, old_catalog)
+
+
+def catalogs_are_same(catalog_1: Catalog, catalog_2: Catalog):
+    try:
+        assert_catalogs_are_same(catalog_1, catalog_2)
+        return True
+    except AssertionError:
+        return False
 
 
 def assert_catalogs_are_same(catalog_1: Catalog, catalog_2: Catalog):
