@@ -66,7 +66,7 @@ def catalog_path(locale_id: str) -> pathlib.Path:
 POT_PATH = pathlib.Path(ROOT_DIR) / "i18n" / "messages.pot"
 
 
-def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
+def extract_to_pot_catalog() -> Catalog:
     mappings = [(ROOT_DIR, [("**.py", _extract_python)], {})]
     pot_catalog = Catalog(default_locale_id)
 
@@ -105,6 +105,10 @@ def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
                 context=context,
             )
 
+    return pot_catalog
+
+
+def _find_default_messages(pot_catalog: Catalog) -> Tuple[Catalog, Dict[str, str]]:
     default_messages = {}
     for message in pot_catalog:
         if message.id:
@@ -122,25 +126,43 @@ def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
 
 
 def extract():
-    pot_catalog, default_messages = extract_to_pot_catalog()
-    catalog = _update_catalog(
-        POT_PATH, default_locale_id, pot_catalog, default_messages
+    pot_catalog = extract_to_pot_catalog()
+    write_po_catalog(
+        POT_PATH,
+        pot_catalog,
+        None,
+        width=10000000,  # we set a huge value for width, so that special comments do not wrap
     )
-    write_po_catalog(POT_PATH, catalog)
+    pot_catalog, default_messages = _find_default_messages(pot_catalog)
+    catalog = _update_catalog(
+        catalog_path(default_locale_id),
+        default_locale_id,
+        pot_catalog,
+        default_messages,
+    )
+    write_po_catalog(catalog_path(default_locale_id), catalog, default_locale_id)
     for locale_id in supported_locale_ids:
-        catalog = _update_catalog(catalog_path(locale_id), locale_id, pot_catalog, {})
-        write_po_catalog(catalog_path(locale_id), catalog)
+        if locale_id != default_locale_id:
+            catalog = _update_catalog(
+                catalog_path(locale_id), locale_id, pot_catalog, {}
+            )
+            write_po_catalog(catalog_path(locale_id), catalog, locale_id)
 
 
 def check():
-    pot_catalog, default_messages = extract_to_pot_catalog()
+    pot_catalog = extract_to_pot_catalog()
+    check_catalog(POT_PATH, pot_catalog, None)
+    pot_catalog, default_messages = _find_default_messages(pot_catalog)
     catalog = _update_catalog(
         POT_PATH, default_locale_id, pot_catalog, default_messages
     )
-    check_catalog(default_locale_id, catalog)
+    check_catalog(catalog_path(default_locale_id), catalog, default_locale_id)
     for locale_id in supported_locale_ids:
-        catalog = _update_catalog(catalog_path(locale_id), locale_id, pot_catalog, {})
-        check_catalog(locale_id, catalog)
+        if locale_id != default_locale_id:
+            catalog = _update_catalog(
+                catalog_path(locale_id), locale_id, pot_catalog, {}
+            )
+            check_catalog(catalog_path(locale_id), catalog, locale_id)
 
 
 def _update_catalog(
@@ -182,7 +204,7 @@ def _update_catalog(
     return catalog
 
 
-def write_po_catalog(path: pathlib.Path, catalog: Catalog):
+def write_po_catalog(path: pathlib.Path, catalog: Catalog, locale_id: str, **kwargs):
     try:
         with open(path, "rb") as po:
             old_catalog = read_po(po)
@@ -190,12 +212,12 @@ def write_po_catalog(path: pathlib.Path, catalog: Catalog):
         old_catalog = Catalog(locale_id)
     if not catalogs_are_same(catalog, old_catalog):
         with open(path, "wb") as po_file:
-            write_po(po_file, catalog)
+            write_po(po_file, catalog, **kwargs)
 
 
-def check_catalog(locale_id: str, catalog: Catalog):
+def check_catalog(path: pathlib.Path, catalog: Catalog, locale_id: str):
     try:
-        with open(catalog_path(locale_id), "rb") as po:
+        with open(path, "rb") as po:
             old_catalog = read_po(po)
     except FileNotFoundError:
         old_catalog = Catalog(locale_id)
@@ -234,7 +256,9 @@ def assert_messages_are_same(message: Message, other_message: Message):
         message.id,
         other_message.id,
     )
-    assert message.string == other_message.string, (
+    assert message.string == other_message.string or (
+        not message.string and not other_message.string
+    ), (
         "Messages with id %s have different string: %s, %s"
         % (message.id, message.string, other_message.string)
     )

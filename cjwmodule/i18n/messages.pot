@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-02-17 14:30-0500\n"
+"POT-Creation-Date: 2020-02-17 22:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,43 +19,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
+#. default-message: HTTP request timed out.
 #: http/errors.py:24
 msgid "http.errors.HttpErrorTimeout"
-msgstr "HTTP request timed out."
+msgstr ""
 
+#. default-message: Invalid URL. Please supply a valid URL, starting with http:// or https://.
 #: http/errors.py:33
 msgid "http.errors.HttpErrorInvalidUrl"
-msgstr "Invalid URL. Please supply a valid URL, starting with http:// or https://."
+msgstr ""
 
+#. default-message: HTTP server(s) redirected us too many times. Please try a different URL.
 #: http/errors.py:43
 msgid "http.errors.HttpErrorTooManyRedirects"
-msgstr "HTTP server(s) redirected us too many times. Please try a different URL."
+msgstr ""
 
+#. default-message: Error from server: HTTP {status_code} {reason}
 #: http/errors.py:56
 msgid "http.errors.HttpErrorNotSuccess"
-msgstr "Error from server: HTTP {status_code} {reason}"
+msgstr ""
 
+#. default-message: Error during HTTP request: {type}
 #: http/errors.py:73
 msgid "http.errors.HttpErrorGeneric"
-msgstr "Error during HTTP request: {type}"
+msgstr ""
 
-#: util/colnames.py:402
+#. default-message: Removed special characters from {n_columns, plural, other{# column names (see “{first_colname}”)} one{column name “{first_colname}”}}
+#: util/colnames.py:400
 msgid "util.colnames.warnings.ascii_cleaned"
 msgstr ""
 
-#: util/colnames.py:416
+#. default-message: {n_columns, plural, other{Renamed # column names because values were empty (see “{first_colname}”)} one{Renamed column name “{first_colname}” because value was empty}}
+#: util/colnames.py:412
 msgid "util.colnames.warnings.default"
 msgstr ""
 
-#: util/colnames.py:429
+#. default-message: {n_columns, plural, other{Truncated # column names to {n_bytes} bytes each (see “{first_colname}”)} one{Truncated column name “{first_colname}” to {n_bytes} bytes}}
+#: util/colnames.py:423
 msgid "util.colnames.warnings.truncated"
 msgstr ""
 
-#: util/colnames.py:446
+#. default-message: {n_columns, plural, other{Renamed # duplicate column names (see “{first_colname}”)} one{Renamed duplicate column name “{first_colname}”}}
+#: util/colnames.py:438
 msgid "util.colnames.warnings.numbered"
 msgstr ""
 
-#: util/colnames.py:459
+#. default-message: {n_columns, plural, other{Fixed # column names with invalid Unicode (see “{first_colname}”)} one{Fixed Unicode in column name “{first_colname}”}}
+#: util/colnames.py:449
 msgid "util.colnames.warnings.unicode_fixed"
 msgstr ""
 
