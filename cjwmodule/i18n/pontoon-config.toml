@@ -1,4 +1,4 @@
-basepath = cjwmodule/i18n
+basepath = "cjwmodule/i18n"
 
 [[paths]]
   reference = "en.po"
