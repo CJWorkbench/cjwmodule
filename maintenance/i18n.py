@@ -63,8 +63,10 @@ def catalog_path(locale_id: str) -> pathlib.Path:
     return pathlib.Path(ROOT_DIR) / "i18n" / f"{locale_id}.po"
 
 
-def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
+POT_PATH = pathlib.Path(ROOT_DIR) / "i18n" / "messages.pot"
 
+
+def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
     mappings = [(ROOT_DIR, [("**.py", _extract_python)], {})]
     pot_catalog = Catalog(default_locale_id)
 
@@ -121,30 +123,35 @@ def extract_to_pot_catalog() -> Tuple[Catalog, Dict[str, str]]:
 
 def extract():
     pot_catalog, default_messages = extract_to_pot_catalog()
-    catalog = _update_catalog(default_locale_id, pot_catalog, default_messages)
-    write_po_catalog(default_locale_id, catalog)
+    catalog = _update_catalog(
+        POT_PATH, default_locale_id, pot_catalog, default_messages
+    )
+    write_po_catalog(POT_PATH, catalog)
     for locale_id in supported_locale_ids:
-        if locale_id != default_locale_id:
-            catalog = _update_catalog(locale_id, pot_catalog, {})
-            write_po_catalog(locale_id, catalog)
+        catalog = _update_catalog(catalog_path(locale_id), locale_id, pot_catalog, {})
+        write_po_catalog(catalog_path(locale_id), catalog)
 
 
 def check():
     pot_catalog, default_messages = extract_to_pot_catalog()
-    catalog = _update_catalog(default_locale_id, pot_catalog, default_messages)
+    catalog = _update_catalog(
+        POT_PATH, default_locale_id, pot_catalog, default_messages
+    )
     check_catalog(default_locale_id, catalog)
     for locale_id in supported_locale_ids:
-        if locale_id != default_locale_id:
-            catalog = _update_catalog(locale_id, pot_catalog, {})
-            check_catalog(locale_id, catalog)
+        catalog = _update_catalog(catalog_path(locale_id), locale_id, pot_catalog, {})
+        check_catalog(locale_id, catalog)
 
 
 def _update_catalog(
-    locale_id: str, pot_catalog: Catalog, default_messages: Dict[str, str]
+    path: pathlib.Path,
+    locale_id: str,
+    pot_catalog: Catalog,
+    default_messages: Dict[str, str],
 ) -> Catalog:
     if not default_messages:
         try:
-            with open(catalog_path(locale_id), "rb") as po:
+            with open(path, "rb") as po:
                 old_catalog = read_po(po)
         except FileNotFoundError:
             old_catalog = Catalog(locale_id)
@@ -175,14 +182,14 @@ def _update_catalog(
     return catalog
 
 
-def write_po_catalog(locale_id: str, catalog: Catalog):
+def write_po_catalog(path: pathlib.Path, catalog: Catalog):
     try:
-        with open(catalog_path(locale_id), "rb") as po:
+        with open(path, "rb") as po:
             old_catalog = read_po(po)
     except FileNotFoundError:
         old_catalog = Catalog(locale_id)
     if not catalogs_are_same(catalog, old_catalog):
-        with open(catalog_path(locale_id), "wb") as po_file:
+        with open(path, "wb") as po_file:
             write_po(po_file, catalog)
 
 
