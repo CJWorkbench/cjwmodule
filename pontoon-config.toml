@@ -3,5 +3,5 @@
 # tell Pontoon locale paths are flat files, not directories.
 
 [[paths]]
-  reference = "cjwmodule/i18n/en.po"
+  reference = "cjwmodule/i18n/messages.pot"
   l10n = "cjwmodule/i18n/{locale}.po"
