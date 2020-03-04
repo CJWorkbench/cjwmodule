@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-02-06 11:02+0200\n"
+"POT-Creation-Date: 2020-03-05 00:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: el\n"
@@ -21,41 +21,60 @@ msgstr ""
 
 #: http/errors.py:24
 msgid "http.errors.HttpErrorTimeout"
-msgstr ""
+msgstr "Το αίτημα HTTP έληξε."
 
 #: http/errors.py:33
 msgid "http.errors.HttpErrorInvalidUrl"
 msgstr ""
+"Μη έγκυρη διεύθυνση URL. Καταχωρήστε μια έγκυρη διεύθυνση URL, που να "
+"ξεκινά με http:// ή https://."
 
 #: http/errors.py:43
 msgid "http.errors.HttpErrorTooManyRedirects"
 msgstr ""
+"Ο διακομιστής ή οι διακομιστές HTTP μάς ανακατευθύνουν ξανά και ξανά. "
+"Δοκιμάστε μια διαφορετική διεύθυνση URL."
 
 #: http/errors.py:56
 msgid "http.errors.HttpErrorNotSuccess"
-msgstr ""
+msgstr "Σφάλμα από διακομιστή: HTTP {status_code} {reason}"
 
 #: http/errors.py:73
 msgid "http.errors.HttpErrorGeneric"
-msgstr ""
+msgstr "Σφάλμα κατά το αίτημα HTTP: {type}"
 
 #: util/colnames.py:400
 msgid "util.colnames.warnings.ascii_cleaned"
 msgstr ""
+"Έγινε κατάργηση ειδικών χαρακτήρων από {n_columns, plural, other{# "
+"ονόματα στηλών (δες “{first_colname}”)} one{όνομα στήλης "
+"“{first_colname}”}}"
 
 #: util/colnames.py:412
 msgid "util.colnames.warnings.default"
 msgstr ""
+"{n_columns, plural, other{Μετονομάστηκαν # ονόματα στηλών επειδή οι τιμές"
+" ήταν κενές (δες “{first_colname}”)} one{Μετονομάστηκε το όνομα της "
+"στήλης “{first_colname}” επειδή η τιμή ήταν κενή}}"
 
 #: util/colnames.py:423
 msgid "util.colnames.warnings.truncated"
 msgstr ""
+"{n_columns, plural, other{Έγινε περικοπή # ονομάτων στηλών σε {n_bytes} "
+"bytes το καθένα (δες “{first_colname}”)} one{Έγινε περικοπή του ονόματος "
+"της στήλης “{first_colname}” σε {n_bytes} bytes}}"
 
 #: util/colnames.py:438
 msgid "util.colnames.warnings.numbered"
 msgstr ""
+"{n_columns, plural, other{Μετονομάστηκαν τα διπλά ονόματα # στηλών (δες "
+"“{first_colname}”)} one{Μετονομάστηκε το διπλό όνομα της στήλης "
+"“{first_colname}”}}"
 
 #: util/colnames.py:449
 msgid "util.colnames.warnings.unicode_fixed"
 msgstr ""
+"{n_columns, plural, other{Διορθώθηκαν # ονόματα στηλών με μη έγκυρο "
+"Unicode (δες “{first_colname}”)} one{Διορθώθηκε ο Unicode στο όνομα της "
+"στήλης “{first_colname}”}}"
 
