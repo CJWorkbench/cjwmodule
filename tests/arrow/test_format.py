@@ -3,6 +3,7 @@ import math
 
 import pyarrow as pa
 import pytest
+
 from cjwmodule.arrow.format import (
     format_number_array,
     format_timestamp_array,
