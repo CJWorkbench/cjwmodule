@@ -3,6 +3,7 @@ Utilities for [CJWorkbench](https://github.com/CJWorkbench/cjworkbench) modules.
 Workbench modules may _optionally_ depend on the latest version of this Python
 package for its handy utilities:
 
+* `cjwmodule.arrow.format`: functions to convert Arrow arrays to text.
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
 * `cjwmodule.testing`: Functions to help in unit testing.

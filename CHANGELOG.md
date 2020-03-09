@@ -1,3 +1,8 @@
+v1.5.0 - 2020-03-08
+-------------------
+
+* `cjwmodule.arrow.format`: convert Arrow arrays to text.
+
 v1.4.2 - 2020-02-20
 -------------------
 
