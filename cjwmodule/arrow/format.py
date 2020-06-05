@@ -5,7 +5,7 @@ import io
 import math
 import sys
 from string import Formatter
-from typing import Callable, NewType, Union
+from typing import Callable, Iterator, NewType, Optional, Union
 
 import pyarrow as pa
 
@@ -150,6 +150,11 @@ def format_number_array(arr: pa.Array, fn: NumberFormatter) -> pa.Array:
     else:
         raise TypeError("Unknown array type %r" % arr.type)
 
+    if valid_buf is None:
+        # HACK: give the same interface as PyArrow bitmap buffer.
+        # Make validity bitmap all-ones.
+        valid_buf = b"\xff" * ((len(arr) + 8) // 8)
+
     nums = memoryview(num_buf).cast(struct_format)
     num_iter = iter(nums)
     offset = 0
@@ -244,6 +249,30 @@ def _ns_to_iso8601(ns: int) -> str:
         return "".join(parts)
 
 
+def _num_iter(
+    valid_buf: Optional[pa.Buffer], nums: memoryview
+) -> Iterator[Optional[Union[int, float]]]:
+    if valid_buf is None:
+        for num in nums:
+            yield num
+    else:
+        num_iter = iter(nums)
+        # valid_buf is a bitset: 8 numbers per byte.
+        # Iterate in groups of 8.
+        try:
+            for in_valid8 in valid_buf:
+                for valid_i in range(8):
+                    valid_mask = 1 << valid_i
+                    is_valid = in_valid8 & valid_mask
+                    num = next(num_iter)  # raise StopIteration at end
+                    if is_valid:
+                        yield num
+                    else:
+                        yield None
+        except StopIteration:
+            pass  # we expect it
+
+
 def format_timestamp_array(arr: pa.Array) -> pa.Array:
     """
     Build a PyArrow utf8 array from a timestamp array.
@@ -262,28 +291,19 @@ def format_timestamp_array(arr: pa.Array) -> pa.Array:
         raise NotImplementedError("TODO handle non-ns")
 
     nums = memoryview(num_buf).cast("l")  # l = int64
-    num_iter = iter(nums)
+    num_iter = _num_iter(valid_buf, nums)
 
     offset = 0
     out_offsets = array.array("I")  # uint32
     out_utf8 = io.BytesIO()
 
-    # valid_buf is a bitset: 8 numbers per byte.
-    # Iterate in groups of 8.
-    try:
-        for in_valid8 in valid_buf:
-            for valid_i in range(8):
-                valid_mask = 1 << valid_i
-                is_valid = in_valid8 & valid_mask
-                num = next(num_iter)
-                # At each number, output the _start_ offset of that number
-                out_offsets.append(offset)
-                if is_valid:
-                    formatted, _ = codecs.readbuffer_encode(_ns_to_iso8601(num))
-                    out_utf8.write(formatted)
-                    offset += len(formatted)
-    except StopIteration:
-        pass
+    for num in num_iter:
+        # At each number, output the _start_ offset of that number
+        out_offsets.append(offset)
+        if num is not None:
+            formatted, _ = codecs.readbuffer_encode(_ns_to_iso8601(num))
+            out_utf8.write(formatted)
+            offset += len(formatted)
 
     out_offsets.append(offset)
 

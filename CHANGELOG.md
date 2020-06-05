@@ -1,3 +1,9 @@
+v1.5.1 - 2020-06-05
+-------------------
+
+* `cjwmodule.arrow.format`: handle null validity buffers. (We saw timestamp
+  problems in the wild.)
+
 v1.5.0 - 2020-03-08
 -------------------
 

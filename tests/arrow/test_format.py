@@ -81,6 +81,14 @@ def test_format_int8_array():
     ).to_pylist() == ["1", "-1", "2", "-2", "3", "-3", "4", "-4", None, None, "6", "-6"]
 
 
+def test_format_int8_array_no_validity_buffer():
+    arr = pa.array([1, 2, 30, 4], pa.int8())
+    valid_buf, num_buf = arr.buffers()
+    format = parse_number_format("{:d}")
+    scary_arr = pa.Array.from_buffers(arr.type, 4, [None, num_buf])
+    assert format_number_array(scary_arr, format).to_pylist() == ["1", "2", "30", "4"]
+
+
 def test_format_uint32_array():
     assert format_number_array(
         pa.array(
@@ -136,6 +144,14 @@ def test_format_float64_array():
     ]
 
 
+def test_format_float64_create_validity_buffer_when_missing():
+    arr = pa.array([1, math.inf, math.nan, 4], pa.float64())
+    valid_buf, num_buf = arr.buffers()
+    format = parse_number_format("{:d}")
+    scary_arr = pa.Array.from_buffers(arr.type, 4, [None, num_buf])
+    assert format_number_array(scary_arr, format).to_pylist() == ["1", None, None, "4"]
+
+
 def test_format_timestamp():
     assert format_timestamp_array(
         pa.array(
@@ -165,3 +181,10 @@ def test_format_timestamp():
         "1970-01-01T00:00:00.000000001Z",
         "1969-12-31T23:59:59.999999999Z",
     ]
+
+
+def test_format_timestamp_no_valid_buf():
+    arr = pa.array([datetime.datetime(2010, 1, 1)], pa.timestamp("ns"))
+    valid_buf, num_buf = arr.buffers()
+    scary_arr = pa.Array.from_buffers(arr.type, len(arr), [None, num_buf], 0, 0)
+    assert format_timestamp_array(scary_arr).to_pylist() == ["2010-01-01"]
