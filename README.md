@@ -12,6 +12,7 @@ package for its handy utilities:
 Developing
 ==========
 
+0. Run `tox` to confirm that unit tests pass
 1. Write a failing unit test in `tests/`
 2. Make it pass by editing code in `cjwmodule/`
 3. `black cjwmodule tests && isort --recursive cjwmodule tests`

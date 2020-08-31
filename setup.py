@@ -11,8 +11,6 @@ from cjwmodule import __version__
 # We use the README as the long_description
 readme = open(join(dirname(__file__), "README.md")).read()
 
-needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
-
 
 class ExtractMessagesCommand(distutils.cmd.Command):
     """A custom command to run i18n-related stuff."""
@@ -61,10 +59,6 @@ setup(
         exclude=["tests", "tests.*", "maintenance", "maintenance.*"]
     ),
     install_requires=["httpx~=0.11.0", "pyarrow~=0.16.0"],
-    setup_requires=["pytest-runner~=5.2"] if needs_pytest else [],
-    extras_require={
-        "tests": ["pytest~=5.3.0", "pytest-asyncio~=0.10.0"],
-        "maintenance": ["babel~=2.8.0"],
-    },
+    extras_require={"maintenance": ["babel~=2.8.0"]},
     cmdclass={"extract_messages": ExtractMessagesCommand},
 )
