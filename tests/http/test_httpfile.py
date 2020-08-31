@@ -146,6 +146,18 @@ class TestDownload:
                 )
                 assert zf.mtime == 0
 
+    async def test_raw_bytes_are_deterministic(self, http_server):
+        # This is the only test that checks raw output. Other tests simply
+        # check that httpfile.read() does what we expect.
+        body = b"A,B\nx,y\nz,a"
+        url = http_server.build_url("/path/to.csv")
+        http_server.mock_response(
+            MockHttpResponse.ok(body, [("Content-Type", "text/csv; charset=utf-8")])
+        )
+        # download to two separate filenames
+        async with self.download(url) as path1, self.download(url) as path2:
+            assert path1.read_bytes() == path2.read_bytes()
+
     async def test_gunzip_encoded_body(self, http_server):
         body = b"A,B\nx,y\nz,a"
         gzbody = gzip.compress(body)
@@ -355,7 +367,7 @@ class TestWrite:
         with tempfile.NamedTemporaryFile() as tf:
             path = Path(tf.name)
             httpfile.write(
-                tf.name,
+                Path(tf.name),
                 {"url": "http://example.com/hello"},
                 "200 OK",
                 [

@@ -98,9 +98,9 @@ def write(
 
     Raise OSError if write to `httpfile_path` fails or read from `body` fails.
     """
-    # set gzip mtime=0 so we can write the exact same file given the exact
-    # same data. (This helps with testing and versioning.)
-    with gzip.GzipFile(httpfile_path, mode="wb", mtime=0) as zf:
+    # set gzip mtime=0, filename='' so we can write the exact same file given
+    # the exact same data. (This helps with testing and versioning.)
+    with httpfile_path.open('wb') as f, gzip.GzipFile(filename='', mtime=0, fileobj=f) as zf:
         # Write URL -- original URL, not redirected URL
         zf.write(
             json.dumps(
