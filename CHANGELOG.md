@@ -1,3 +1,10 @@
+v1.5.2 - 2020-08-31
+-------------------
+
+* `cjwmodule.http.httpfile`: omit filename from gzip header. Now output will be
+  deterministic, so if the upstream doesn't change the gzip doesn't change.
+* Bump black, httpx, pytest
+
 v1.5.1 - 2020-06-05
 -------------------
 

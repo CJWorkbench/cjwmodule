@@ -100,7 +100,9 @@ def write(
     """
     # set gzip mtime=0, filename='' so we can write the exact same file given
     # the exact same data. (This helps with testing and versioning.)
-    with httpfile_path.open('wb') as f, gzip.GzipFile(filename='', mtime=0, fileobj=f) as zf:
+    with httpfile_path.open("wb") as f, gzip.GzipFile(
+        filename="", mtime=0, fileobj=f
+    ) as zf:
         # Write URL -- original URL, not redirected URL
         zf.write(
             json.dumps(
