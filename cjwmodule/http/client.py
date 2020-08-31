@@ -4,8 +4,7 @@ from collections import namedtuple
 from typing import BinaryIO, List, Optional, Tuple
 
 import httpx
-import httpx.exceptions
-from httpx.status_codes import codes as http_status
+from httpx import codes as http_status
 
 from .errors import HttpError
 
@@ -35,7 +34,7 @@ async def download(
     * HttpError.NotSuccess if the status code isn't 200, 204 or 206.
     * HttpError.Generic (with a __cause__) if something else went wrong.
     """
-    timeout = httpx.Timeout(total_timeout, connect_timeout=connect_timeout)
+    timeout = httpx.Timeout(total_timeout, connect=connect_timeout)
 
     async with contextlib.AsyncExitStack() as exit_stack:
         if httpx_client is None:
@@ -62,9 +61,9 @@ async def download(
                 )
         except httpx.TimeoutException:
             raise HttpError.Timeout from None
-        except httpx.InvalidURL:
+        except (httpx.InvalidURL, httpx.UnsupportedProtocol):
             raise HttpError.InvalidUrl from None
-        except httpx.exceptions.RedirectError:
+        except httpx.TooManyRedirects:
             raise HttpError.TooManyRedirects from None
         except httpx.HTTPError as err:
             raise HttpError.Generic from err

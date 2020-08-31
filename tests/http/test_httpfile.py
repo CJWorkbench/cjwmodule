@@ -228,6 +228,10 @@ class TestDownload:
 
     async def test_invalid_url(self):
         with pytest.raises(HttpError.InvalidUrl):
+            await httpfile.download("-", Path())
+
+    async def test_unsupported_protocol(self):
+        with pytest.raises(HttpError.InvalidUrl):
             await httpfile.download("htt://example.com", Path())
 
     async def test_follow_redirect(self, http_server):
