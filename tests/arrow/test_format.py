@@ -75,10 +75,13 @@ def test_format_float():
 
 
 def test_format_int8_array():
-    assert format_number_array(
-        pa.array([1, -1, 2, -2, 3, -3, 4, -4, None, None, 6, -6], pa.int8()),
-        parse_number_format("{:d}"),
-    ).to_pylist() == ["1", "-1", "2", "-2", "3", "-3", "4", "-4", None, None, "6", "-6"]
+    assert (
+        format_number_array(
+            pa.array([1, -1, 2, -2, 3, -3, 4, -4, None, None, 6, -6], pa.int8()),
+            parse_number_format("{:d}"),
+        ).to_pylist()
+        == ["1", "-1", "2", "-2", "3", "-3", "4", "-4", None, None, "6", "-6"]
+    )
 
 
 def test_format_int8_array_no_validity_buffer():

@@ -10,8 +10,8 @@ class HttpError(Exception):
 
     @property
     def i18n_message(self) -> I18nMessage:
-        """A message descrbing the error to the user. 
-        
+        """A message descrbing the error to the user.
+
         Must be overriden by subclasses.
         """
         raise NotImplementedError()

@@ -49,7 +49,7 @@ def _trans_cjwmodule(id: str, default: str, args: Dict[str, Any] = {}) -> I18nMe
 
         from cjwmodule.i18n import _trans_cjwmodule
 
-        except ApiException as err:  # some 
+        except ApiException as err:  # some
             return _trans_cjwmodule(
                 "greatapi.exception.message",
                 "Something is wrong: {error}",

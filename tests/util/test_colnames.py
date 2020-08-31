@@ -228,7 +228,15 @@ def test_gen_and_warn_truncated():
 
 def test_gen_and_warn_multiple():
     assert gen_unique_clean_colnames_and_warn(
-        ["A Column", "B Column", "ab", "ab", "ab", "",], settings=MockSettings(6),
+        [
+            "A Column",
+            "B Column",
+            "ab",
+            "ab",
+            "ab",
+            "",
+        ],
+        settings=MockSettings(6),
     )[1] == (
         [
             cjwmodule_i18n_message(
