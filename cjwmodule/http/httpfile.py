@@ -88,7 +88,7 @@ def write(
     httpfile_path: Path,
     parameters: Dict[str, Any],
     status_line: str,
-    headers: List[Tuple[str, str]],
+    headers: List[Tuple[bytes, bytes]],
     body: BinaryIO,
 ) -> None:
     """
@@ -119,11 +119,16 @@ def write(
         zf.write(b"\r\n")
         # Write response headers.
         for k, v in headers:
+            k_str_lower = k.decode("latin-1").lower()
             # body is already dechunked and decompressed. Mangle
             # these headers to make file consistent with itself.
-            if k.lower() in {"transfer-encoding", "content-encoding", "content-length"}:
-                k = "Cjw-Original-" + k
-            elif k.lower() not in {"content-type", "content-disposition", "server"}:
+            if k_str_lower in {
+                "transfer-encoding",
+                "content-encoding",
+                "content-length",
+            }:
+                k = b"Cjw-Original-" + k
+            elif k_str_lower not in {"content-type", "content-disposition", "server"}:
                 # Skip writing most headers. This is a HACK: we skip the
                 # `Date` header so fetcher will see a byte-for-byte
                 # identical output file given byte-for-byte identical
@@ -135,8 +140,11 @@ def write(
             # There's no way to put \r\n in an HTTP header name or value.
             # Good thing: if a server could do that, this file format would
             # be unreadable.
-            assert "\n" not in k and "\n" not in v
-            zf.write(f"{k}: {v}\r\n".encode("latin1"))
+            assert b"\n" not in k and b":" not in k and b"\n" not in v
+            zf.write(k)
+            zf.write(b": ")
+            zf.write(v)
+            zf.write(b"\r\n")
         zf.write(b"\r\n")
 
         # Write body

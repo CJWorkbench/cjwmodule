@@ -23,7 +23,7 @@ class MockHttpResponse:
     status_code: int = 200
     """HTTP status code"""
 
-    headers: List[Tuple[str, str]] = field(default_factory=list)
+    headers: List[Tuple[bytes, bytes]] = field(default_factory=list)
     """List of headers -- including Content-Length, Transfer-Encoding, etc."""
 
     body: Union[bytes, List[bytes]] = b""
@@ -37,16 +37,18 @@ class MockHttpResponse:
 
     @classmethod
     def ok(
-        cls, body: bytes = b"", headers: List[Tuple[str, str]] = []
+        cls, body: bytes = b"", headers: List[Tuple[bytes, bytes]] = []
     ) -> MockHttpResponse:
         if isinstance(body, bytes):
-            if not any(h[0].upper() == "CONTENT-LENGTH" for h in headers):
+            if not any(h[0] == b"content-length" for h in headers):
                 # do not append to `headers`: create a new list
-                headers = headers + [("Content-Length", str(len(body)))]
+                headers = headers + [
+                    (b"content-length", str(len(body)).encode("ascii"))
+                ]
         elif isinstance(body, list):
-            if not any(h[0].upper() == "TRANSFER-ENCODING" for h in headers):
+            if not any(h[0] == b"transfer-encoding" for h in headers):
                 # do not append to `headers`: create a new list
-                headers = headers + [("Transfer-Encoding", "chunked")]
+                headers = headers + [(b"transfer-encoding", b"chunked")]
         else:
             raise TypeError("body must be bytes or List[bytes]; got %r" % type(body))
         return cls(status_code=200, body=body, headers=headers)
@@ -68,7 +70,9 @@ def http_server():
 
             self.send_response_only(r.status_code)
             for header, value in r.headers:
-                self.send_header(header, value)
+                # BaseHTTPRequestHandler requires str headers. Beware -- if you
+                # pass b"abc" it'll convert it with repr(), to 'b"abc"'.
+                self.send_header(header.decode("latin-1"), value.decode("latin-1"))
             self.end_headers()
             write = self.wfile.write
             if isinstance(r.body, list):
@@ -130,7 +134,7 @@ class TestDownload:
         body = b"A,B\nx,y\nz,a"
         url = http_server.build_url("/path/to.csv")
         http_server.mock_response(
-            MockHttpResponse.ok(body, [("Content-Type", "text/csv; charset=utf-8")])
+            MockHttpResponse.ok(body, [(b"content-type", b"text/csv; charset=utf-8")])
         )
         async with self.download(url) as path:
             with gzip.GzipFile(path) as zf:
@@ -152,7 +156,7 @@ class TestDownload:
         body = b"A,B\nx,y\nz,a"
         url = http_server.build_url("/path/to.csv")
         http_server.mock_response(
-            MockHttpResponse.ok(body, [("Content-Type", "text/csv; charset=utf-8")])
+            MockHttpResponse.ok(body, [(b"content-type", b"text/csv; charset=utf-8")])
         )
         # download to two separate filenames
         async with self.download(url) as path1, self.download(url) as path2:
@@ -166,8 +170,8 @@ class TestDownload:
             MockHttpResponse.ok(
                 gzbody,
                 [
-                    ("Content-Type", "text/csv; charset=utf-8"),
-                    ("Content-Encoding", "gzip"),
+                    (b"content-type", b"text/csv; charset=utf-8"),
+                    (b"content-encoding", b"gzip"),
                 ],
             )
         )
@@ -192,8 +196,8 @@ class TestDownload:
             MockHttpResponse.ok(
                 zbody,
                 [
-                    ("Content-Type", "text/csv; charset=utf-8"),
-                    ("Content-Encoding", "deflate"),
+                    (b"content-type", b"text/csv; charset=utf-8"),
+                    (b"content-encoding", b"deflate"),
                 ],
             )
         )
@@ -213,7 +217,7 @@ class TestDownload:
         http_server.mock_response(
             MockHttpResponse.ok(
                 [b"A,B\nx", b",y\nz,", b"a"],
-                [("Content-Type", "text/csv; charset=utf-8")],
+                [(b"content-type", b"text/csv; charset=utf-8")],
             )
         )
         url = http_server.build_url("/path/to.csv.chunks")
@@ -228,6 +232,35 @@ class TestDownload:
                     ("content-type", "text/csv; charset=utf-8"),
                     ("transfer-encoding", "chunked"),
                 ]
+
+    async def test_write_latin1_content_disposition(self, http_server):
+        # If a server responds with a non-ACSII Content-Definition, write it.
+        #
+        # In practice, this is _usually_ a bug on the server -- for instance,
+        # `Content-disposition: attachment; filename="Зараховані..."`. Nobody
+        # actually wants iso-8859-1 encoding because it doesn't handle Unicode.
+        # And anybody who thinks about this uses RFC6266 to encode
+        # Content-Disposition. But all we're testing is that we don't crash.
+        #
+        # https://www.pivotaltracker.com/story/show/174715741
+        body = b"A,B\nx,y\nz,a"
+        url = http_server.build_url("/path/to.csv")
+        # erroneous value, seen in the wild
+        raw_header_value = 'attachment; filename="Зараховані.json"'.encode("utf-8")
+        http_server.mock_response(
+            MockHttpResponse.ok(
+                body,
+                [
+                    (b"content-type", b"text/csv; charset=utf-8"),
+                    (b"content-disposition", raw_header_value),
+                ],
+            )
+        )
+        async with self.download(url) as path:
+            assert (
+                b"\r\ncontent-disposition: " + raw_header_value + b"\r\n"
+                in gzip.decompress(path.read_bytes())
+            )
 
     async def test_404_http_error(self, http_server):
         http_server.mock_response(MockHttpResponse(404))
@@ -253,9 +286,9 @@ class TestDownload:
         http_server.mock_response(
             iter(
                 [
-                    MockHttpResponse(302, [("Location", url2)]),
-                    MockHttpResponse(302, [("Location", url3)]),
-                    MockHttpResponse.ok(b"A,B\n1,2", [("Content-Type", "text/csv")]),
+                    MockHttpResponse(302, [(b"location", url2.encode("ascii"))]),
+                    MockHttpResponse(302, [(b"location", url3.encode("ascii"))]),
+                    MockHttpResponse.ok(b"A,B\n1,2", [(b"content-type", b"text/csv")]),
                 ]
             )
         )
@@ -270,8 +303,8 @@ class TestDownload:
         http_server.mock_response(
             itertools.cycle(
                 [
-                    MockHttpResponse(302, [("Location", url2)]),
-                    MockHttpResponse(302, [("Location", url1)]),
+                    MockHttpResponse(302, [(b"location", url2.encode("ascii"))]),
+                    MockHttpResponse(302, [(b"location", url1.encode("ascii"))]),
                 ]
             )
         )
@@ -282,7 +315,7 @@ class TestDownload:
     async def test_generic_http_error(self, http_server):
         url = http_server.build_url("/should-be-gzipped")
         http_server.mock_response(
-            MockHttpResponse.ok(b"not gzipped", [("Content-Encoding", "gzip")])
+            MockHttpResponse.ok(b"not gzipped", [(b"content-encoding", b"gzip")])
         )
         with pytest.raises(HttpError.Generic) as cm:
             async with self.download(url):
@@ -338,6 +371,39 @@ class TestRead:
             with httpfile.read(path) as (parameters, status_line, headers, body_path):
                 assert headers == [("content-disposition", "attachment; filename=café")]
 
+    def test_do_not_crash_on_utf8_encoded_content_disposition_header(self):
+        # If the server responded with a UTF-8-encoded header, that's a bug
+        # on the server: the author didn't realize all headers are
+        # latin1-encoded, so the header is actually double-encoded.
+        #
+        # The result: if a developer unwittingly utf8-encodes a filename, then
+        # the result is _unambiguously_ something else. For instance, "café"
+        # encodes to "cafÃ©".
+        #
+        # We're spec-compliant here. We will correctly return "cafÃ©". The
+        # caller can second-guess us if it sees fit.
+        #
+        # https://www.pivotaltracker.com/story/show/174715741
+        with tempfile.NamedTemporaryFile() as tf:
+            path = Path(tf.name)
+            path.write_bytes(
+                gzip.compress(
+                    b"".join(
+                        [
+                            b'{"url":"http://example.com/hello"}\r\n',
+                            b"200 OK\r\n",
+                            b"content-disposition: attachment; filename=caf\xc3\xa9\r\n",
+                            b"\r\n",
+                            b"Some text",
+                        ]
+                    )
+                )
+            )
+            with httpfile.read(path) as (parameters, status_line, headers, body_path):
+                assert headers == [
+                    ("content-disposition", "attachment; filename=cafÃ©")
+                ]
+
     def test_special_headers(self):
         # Content-Length doesn't get stored in the httpfile format, because it
         # would be ambiguous. (It does not specify the number of bytes of body.
@@ -371,9 +437,9 @@ class TestWrite:
                 {"url": "http://example.com/hello"},
                 "200 OK",
                 [
-                    ("transfer-encoding", "chunked"),
-                    ("content-encoding", "gzip"),
-                    ("content-length", "3"),
+                    (b"transfer-encoding", b"chunked"),
+                    (b"content-encoding", b"gzip"),
+                    (b"content-length", b"3"),
                 ],
                 io.BytesIO(b"\x00\x01\x02"),
             )
@@ -399,9 +465,9 @@ class TestWrite:
                 {"url": "http://example.com/hello"},
                 "200 OK",
                 [
-                    ("date", "Wed, 21 Oct 2015 07:28:00 GMT"),
-                    ("server", "custom-server 0.1"),
-                    ("ETag", "some-etag"),
+                    (b"date", b"Wed, 21 Oct 2015 07:28:00 GMT"),
+                    (b"server", b"custom-server 0.1"),
+                    (b"ETag", b"some-etag"),
                 ],
                 io.BytesIO(b"\x00\x01\x02"),
             )

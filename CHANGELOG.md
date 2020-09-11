@@ -1,3 +1,10 @@
+v1.5.3 - 2020-09-11
+-------------------
+
+* `cjwmodule.http`: treat headers as ISO-8859-1, always. (We're a spec-compliant
+  library; callers are welcome to second-guess server responses.) Fixes a crash
+  when dealing with UTF-8 Content-Disposition.
+
 v1.5.2 - 2020-08-31
 -------------------
 

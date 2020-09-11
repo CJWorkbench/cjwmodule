@@ -1,16 +1,17 @@
 import contextlib
 import ssl
-from collections import namedtuple
-from typing import BinaryIO, List, Optional, Tuple
+from typing import BinaryIO, List, NamedTuple, Optional, Tuple
 
 import httpx
 from httpx import codes as http_status
 
 from .errors import HttpError
 
-DownloadResult = namedtuple(
-    "DownloadResult", ["status_code", "reason_phrase", "headers"]
-)
+
+class DownloadResult(NamedTuple):
+    status_code: int
+    reason_phrase: str
+    headers: List[Tuple[bytes, bytes]]
 
 
 async def download(
@@ -57,7 +58,7 @@ async def download(
                 return DownloadResult(
                     response.status_code,
                     response.reason_phrase,
-                    list(response.headers.items()),
+                    response.headers.raw,
                 )
         except httpx.TimeoutException:
             raise HttpError.Timeout from None
