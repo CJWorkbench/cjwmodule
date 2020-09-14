@@ -3,8 +3,8 @@ language: python
 python:
 - '3.8'
 install:
-- pip install black pyflakes isort
-- pip install -e .[tests,maintenance]
+- pip install black pyflakes isort pytest pytest-asyncio
+- pip install -e .[maintenance]
 - pip freeze
 script:
 - pyflakes .
