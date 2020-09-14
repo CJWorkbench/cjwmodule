@@ -11,7 +11,7 @@ from .errors import HttpError
 class DownloadResult(NamedTuple):
     status_code: int
     reason_phrase: str
-    headers: List[Tuple[bytes, bytes]]
+    headers: List[Tuple[str, str]]
 
 
 async def download(
@@ -55,10 +55,29 @@ async def download(
                     http_status.PARTIAL_CONTENT.value,
                 }:
                     raise HttpError.NotSuccess(response)
+
+                # https://tools.ietf.org/html/rfc7230#section-3.2.4
+                #   Historically, HTTP has allowed field content with text in the
+                #   ISO-8859-1 charset [ISO-8859-1], supporting other charsets only
+                #   through use of [RFC2047] encoding.  In practice, most HTTP header
+                #   field values use only a subset of the US-ASCII charset [USASCII].
+                #   Newly defined header fields SHOULD limit their field values to
+                #   US-ASCII octets.  A recipient SHOULD treat other octets in field
+                #   content (obs-text) as opaque data.
+                #
+                # ... httpx tries to decode as UTF-8 because some websites send
+                # UTF-8 Content-Disposition in error. But cjworkbench shouldn't
+                # handle spec violations at this low a level. httpfile needs to
+                # write these values, and it encodes strings as iso-8859-1. If
+                # we let httpx give us any Unicode codepoints, httpfile won't
+                # be able to encode them.
+                headers = [
+                    (k.decode("latin1"), v.decode("latin1"))
+                    for k, v in response.headers.raw
+                ]
+
                 return DownloadResult(
-                    response.status_code,
-                    response.reason_phrase,
-                    response.headers.raw,
+                    response.status_code, response.reason_phrase, headers
                 )
         except httpx.TimeoutException:
             raise HttpError.Timeout from None

@@ -1,5 +1,13 @@
+v1.5.4 - 2020-09-14
+-------------------
+
+* `cjwmodule.http`: revert API change from v1.5.3. Headers should be str, not
+  bytes, because a change to bytes would mean changing the API.
+
 v1.5.3 - 2020-09-11
 -------------------
+
+**DO NOT USE: not API-compatible with the other v1 releases**
 
 * `cjwmodule.http`: treat headers as ISO-8859-1, always. (We're a spec-compliant
   library; callers are welcome to second-guess server responses.) Fixes a crash

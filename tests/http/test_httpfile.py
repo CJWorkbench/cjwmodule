@@ -23,7 +23,7 @@ class MockHttpResponse:
     status_code: int = 200
     """HTTP status code"""
 
-    headers: List[Tuple[bytes, bytes]] = field(default_factory=list)
+    headers: List[Tuple[str, str]] = field(default_factory=list)
     """List of headers -- including Content-Length, Transfer-Encoding, etc."""
 
     body: Union[bytes, List[bytes]] = b""
@@ -37,18 +37,16 @@ class MockHttpResponse:
 
     @classmethod
     def ok(
-        cls, body: bytes = b"", headers: List[Tuple[bytes, bytes]] = []
+        cls, body: bytes = b"", headers: List[Tuple[str, str]] = []
     ) -> MockHttpResponse:
         if isinstance(body, bytes):
-            if not any(h[0] == b"content-length" for h in headers):
+            if not any(h[0].lower() == "content-length" for h in headers):
                 # do not append to `headers`: create a new list
-                headers = headers + [
-                    (b"content-length", str(len(body)).encode("ascii"))
-                ]
+                headers = headers + [("content-length", str(len(body)))]
         elif isinstance(body, list):
-            if not any(h[0] == b"transfer-encoding" for h in headers):
+            if not any(h[0].lower() == "transfer-encoding" for h in headers):
                 # do not append to `headers`: create a new list
-                headers = headers + [(b"transfer-encoding", b"chunked")]
+                headers = headers + [("transfer-encoding", "chunked")]
         else:
             raise TypeError("body must be bytes or List[bytes]; got %r" % type(body))
         return cls(status_code=200, body=body, headers=headers)
@@ -70,9 +68,7 @@ def http_server():
 
             self.send_response_only(r.status_code)
             for header, value in r.headers:
-                # BaseHTTPRequestHandler requires str headers. Beware -- if you
-                # pass b"abc" it'll convert it with repr(), to 'b"abc"'.
-                self.send_header(header.decode("latin-1"), value.decode("latin-1"))
+                self.send_header(header, value)
             self.end_headers()
             write = self.wfile.write
             if isinstance(r.body, list):
@@ -134,7 +130,7 @@ class TestDownload:
         body = b"A,B\nx,y\nz,a"
         url = http_server.build_url("/path/to.csv")
         http_server.mock_response(
-            MockHttpResponse.ok(body, [(b"content-type", b"text/csv; charset=utf-8")])
+            MockHttpResponse.ok(body, [("content-type", "text/csv; charset=utf-8")])
         )
         async with self.download(url) as path:
             with gzip.GzipFile(path) as zf:
@@ -156,7 +152,7 @@ class TestDownload:
         body = b"A,B\nx,y\nz,a"
         url = http_server.build_url("/path/to.csv")
         http_server.mock_response(
-            MockHttpResponse.ok(body, [(b"content-type", b"text/csv; charset=utf-8")])
+            MockHttpResponse.ok(body, [("content-type", "text/csv; charset=utf-8")])
         )
         # download to two separate filenames
         async with self.download(url) as path1, self.download(url) as path2:
@@ -170,8 +166,8 @@ class TestDownload:
             MockHttpResponse.ok(
                 gzbody,
                 [
-                    (b"content-type", b"text/csv; charset=utf-8"),
-                    (b"content-encoding", b"gzip"),
+                    ("content-type", "text/csv; charset=utf-8"),
+                    ("content-encoding", "gzip"),
                 ],
             )
         )
@@ -196,8 +192,8 @@ class TestDownload:
             MockHttpResponse.ok(
                 zbody,
                 [
-                    (b"content-type", b"text/csv; charset=utf-8"),
-                    (b"content-encoding", b"deflate"),
+                    ("content-type", "text/csv; charset=utf-8"),
+                    ("content-encoding", "deflate"),
                 ],
             )
         )
@@ -217,7 +213,7 @@ class TestDownload:
         http_server.mock_response(
             MockHttpResponse.ok(
                 [b"A,B\nx", b",y\nz,", b"a"],
-                [(b"content-type", b"text/csv; charset=utf-8")],
+                [("content-type", "text/csv; charset=utf-8")],
             )
         )
         url = http_server.build_url("/path/to.csv.chunks")
@@ -246,19 +242,24 @@ class TestDownload:
         body = b"A,B\nx,y\nz,a"
         url = http_server.build_url("/path/to.csv")
         # erroneous value, seen in the wild
-        raw_header_value = 'attachment; filename="Зараховані.json"'.encode("utf-8")
+        # 'Зараховані.json'.encode('utf-8').decode('latin1')
+        latin1_header = 'attachment; filename="Ð\x97Ð°Ñ\x80Ð°Ñ\x85Ð¾Ð²Ð°Ð½Ñ\x96.json"'
         http_server.mock_response(
             MockHttpResponse.ok(
                 body,
                 [
-                    (b"content-type", b"text/csv; charset=utf-8"),
-                    (b"content-disposition", raw_header_value),
+                    ("content-type", "text/csv; charset=utf-8"),
+                    ("content-disposition", latin1_header),
                 ],
             )
         )
         async with self.download(url) as path:
+            # 'Зараховані.json'.encode('utf-8')
+            #
+            # ... we're testing that the file contains latin1. This bizarre
+            # string looks like UTF-8, but httpfile will return it as latin1.
             assert (
-                b"\r\ncontent-disposition: " + raw_header_value + b"\r\n"
+                b'\r\ncontent-disposition: attachment; filename="\xd0\x97\xd0\xb0\xd1\x80\xd0\xb0\xd1\x85\xd0\xbe\xd0\xb2\xd0\xb0\xd0\xbd\xd1\x96.json"\r\n'
                 in gzip.decompress(path.read_bytes())
             )
 
@@ -286,9 +287,9 @@ class TestDownload:
         http_server.mock_response(
             iter(
                 [
-                    MockHttpResponse(302, [(b"location", url2.encode("ascii"))]),
-                    MockHttpResponse(302, [(b"location", url3.encode("ascii"))]),
-                    MockHttpResponse.ok(b"A,B\n1,2", [(b"content-type", b"text/csv")]),
+                    MockHttpResponse(302, [("location", url2)]),
+                    MockHttpResponse(302, [("location", url3)]),
+                    MockHttpResponse.ok(b"A,B\n1,2", [("content-type", "text/csv")]),
                 ]
             )
         )
@@ -303,8 +304,8 @@ class TestDownload:
         http_server.mock_response(
             itertools.cycle(
                 [
-                    MockHttpResponse(302, [(b"location", url2.encode("ascii"))]),
-                    MockHttpResponse(302, [(b"location", url1.encode("ascii"))]),
+                    MockHttpResponse(302, [("location", url2)]),
+                    MockHttpResponse(302, [("location", url1)]),
                 ]
             )
         )
@@ -315,7 +316,7 @@ class TestDownload:
     async def test_generic_http_error(self, http_server):
         url = http_server.build_url("/should-be-gzipped")
         http_server.mock_response(
-            MockHttpResponse.ok(b"not gzipped", [(b"content-encoding", b"gzip")])
+            MockHttpResponse.ok(b"not gzipped", [("content-encoding", "gzip")])
         )
         with pytest.raises(HttpError.Generic) as cm:
             async with self.download(url):
@@ -437,9 +438,9 @@ class TestWrite:
                 {"url": "http://example.com/hello"},
                 "200 OK",
                 [
-                    (b"transfer-encoding", b"chunked"),
-                    (b"content-encoding", b"gzip"),
-                    (b"content-length", b"3"),
+                    ("transfer-encoding", "chunked"),
+                    ("content-encoding", "gzip"),
+                    ("content-length", "3"),
                 ],
                 io.BytesIO(b"\x00\x01\x02"),
             )
@@ -465,9 +466,9 @@ class TestWrite:
                 {"url": "http://example.com/hello"},
                 "200 OK",
                 [
-                    (b"date", b"Wed, 21 Oct 2015 07:28:00 GMT"),
-                    (b"server", b"custom-server 0.1"),
-                    (b"ETag", b"some-etag"),
+                    ("date", "Wed, 21 Oct 2015 07:28:00 GMT"),
+                    ("server", "custom-server 0.1"),
+                    ("ETag", "some-etag"),
                 ],
                 io.BytesIO(b"\x00\x01\x02"),
             )
