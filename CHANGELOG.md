@@ -1,6 +1,11 @@
 v1.5.4 - 2020-09-14
 -------------------
 
+* `cjwmodule.http`: nix errant `print()`
+
+v1.5.4 - 2020-09-14
+-------------------
+
 * `cjwmodule.http`: revert API change from v1.5.3. Headers should be str, not
   bytes, because a change to bytes would mean changing the API.
 

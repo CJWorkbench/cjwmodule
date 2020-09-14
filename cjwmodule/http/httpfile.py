@@ -118,7 +118,6 @@ def write(
         zf.write(status_line.encode("latin1"))
         zf.write(b"\r\n")
         # Write response headers.
-        print(repr(headers))
         for k, v in headers:
             assert isinstance(k, str) and isinstance(v, str)
             # body is already dechunked and decompressed. Mangle
