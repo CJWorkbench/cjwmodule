@@ -3,6 +3,7 @@ v1.5.6 - 2020-09-14
 
 * `cjwmodule.util.colnames.Settings`: use python3.8 `typing.Protocol` (only
   changes type-checking, not code)
+* `cjwmodule.testing.i18n`: add type hints
 
 v1.5.5 - 2020-09-14
 -------------------
