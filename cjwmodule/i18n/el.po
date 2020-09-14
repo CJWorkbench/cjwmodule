@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-03-05 00:41+0200\n"
+"POT-Creation-Date: 2020-09-14 13:55-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: el\n"
@@ -43,38 +43,38 @@ msgstr "Σφάλμα από διακομιστή: HTTP {status_code} {reason}"
 msgid "http.errors.HttpErrorGeneric"
 msgstr "Σφάλμα κατά το αίτημα HTTP: {type}"
 
-#: util/colnames.py:400
+#: util/colnames.py:399
 msgid "util.colnames.warnings.ascii_cleaned"
 msgstr ""
 "Έγινε κατάργηση ειδικών χαρακτήρων από {n_columns, plural, other{# "
 "ονόματα στηλών (δείτε “{first_colname}”)} one{όνομα στήλης "
 "“{first_colname}”}}"
 
-#: util/colnames.py:412
+#: util/colnames.py:411
 msgid "util.colnames.warnings.default"
 msgstr ""
 "{n_columns, plural, other{Μετονομάστηκαν # ονόματα στηλών επειδή οι τιμές"
 " ήταν κενές (δείτε “{first_colname}”)} one{Μετονομάστηκε το όνομα της "
 "στήλης “{first_colname}” επειδή η τιμή ήταν κενή}}"
 
-#: util/colnames.py:423
+#: util/colnames.py:422
 msgid "util.colnames.warnings.truncated"
 msgstr ""
 "{n_columns, plural, other{Έγινε περικοπή # ονομάτων στηλών σε {n_bytes} "
-"bytes το καθένα (δείτε “{first_colname}”)} one{Έγινε περικοπή του ονόματος "
-"της στήλης “{first_colname}” σε {n_bytes} bytes}}"
+"bytes το καθένα (δείτε “{first_colname}”)} one{Έγινε περικοπή του "
+"ονόματος της στήλης “{first_colname}” σε {n_bytes} bytes}}"
 
-#: util/colnames.py:438
+#: util/colnames.py:437
 msgid "util.colnames.warnings.numbered"
 msgstr ""
-"{n_columns, plural, other{Μετονομάστηκαν τα διπλά ονόματα # στηλών (δείτε "
-"“{first_colname}”)} one{Μετονομάστηκε το διπλό όνομα της στήλης "
+"{n_columns, plural, other{Μετονομάστηκαν τα διπλά ονόματα # στηλών (δείτε"
+" “{first_colname}”)} one{Μετονομάστηκε το διπλό όνομα της στήλης "
 "“{first_colname}”}}"
 
-#: util/colnames.py:449
+#: util/colnames.py:448
 msgid "util.colnames.warnings.unicode_fixed"
 msgstr ""
 "{n_columns, plural, other{Διορθώθηκαν # ονόματα στηλών με μη έγκυρο "
-"Unicode (δείτε “{first_colname}”)} one{Διορθώθηκε ο Unicode στο όνομα της "
-"στήλης “{first_colname}”}}"
+"Unicode (δείτε “{first_colname}”)} one{Διορθώθηκε ο Unicode στο όνομα της"
+" στήλης “{first_colname}”}}"
 

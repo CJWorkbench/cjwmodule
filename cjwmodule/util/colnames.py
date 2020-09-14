@@ -1,12 +1,11 @@
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional, Protocol, Tuple
 
 from cjwmodule.i18n import I18nMessage, _trans_cjwmodule
 
 
-# class Settings(Protocol): TODO py38 from typing import Protocol
-class Settings:
+class Settings(Protocol):
     MAX_BYTES_PER_COLUMN_NAME: int = 100
 
 

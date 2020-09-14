@@ -1,4 +1,10 @@
-v1.5.4 - 2020-09-14
+v1.5.6 - 2020-09-14
+-------------------
+
+* `cjwmodule.util.colnames.Settings`: use python3.8 `typing.Protocol` (only
+  changes type-checking, not code)
+
+v1.5.5 - 2020-09-14
 -------------------
 
 * `cjwmodule.http`: nix errant `print()`
