@@ -1,3 +1,10 @@
+v2.0.0 - 2020-09-22
+-------------------
+
+* Bump dependency to pyarrow~=1.0.1
+
+This is a major version change.
+
 v1.5.7 - 2020-09-22
 -------------------
 
