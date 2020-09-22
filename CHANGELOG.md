@@ -1,3 +1,8 @@
+v1.5.7 - 2020-09-22
+-------------------
+
+* `cjwmodule.util.colnames`: fix KeyError on colnames like " 1".
+
 v1.5.6 - 2020-09-14
 -------------------
 

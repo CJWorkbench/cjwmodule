@@ -180,7 +180,7 @@ def clean_colname(name: str, *, settings: Settings = DefaultSettings()) -> Clean
     )
 
 
-_NUMBERED_COLNAME_PATTERN = re.compile(r"^(.*?) (\d+)$")
+_NUMBERED_COLNAME_PATTERN = re.compile(r"^(.+?) (\d+)$")
 
 
 def _parse_colname_key_and_optional_number(name: str) -> Tuple[str, Optional[int]]:
@@ -269,8 +269,7 @@ def gen_unique_clean_colnames(
     for i, colname in enumerate(clean_names):
         index = i + len(existing_names)
         key, num = _parse_colname_key_and_optional_number(colname.name)
-        if key:  # ignore ""
-            blacklist.setdefault(key, {}).setdefault(num, index)
+        blacklist.setdefault(key, {}).setdefault(num, index)
 
     # 2b. blacklist _default_ column names, too
     for i, colname in enumerate(clean_names):

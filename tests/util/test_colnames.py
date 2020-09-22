@@ -160,6 +160,22 @@ def test_gen_truncate_during_conflict_consider_unicode():
     ]
 
 
+def test_gen_do_not_number_name_without_key():
+    # issue #174927345: handle empty-string key
+    assert gen_unique_clean_colnames([" 1", " 1"]) == [
+        UniqueCleanColname(" 1"),
+        UniqueCleanColname(" 1 2", is_numbered=True),
+    ]
+
+
+def test_gen_whitespace_only_key():
+    # issue #174927345: handle empty-string key
+    assert gen_unique_clean_colnames(["  1", "  1"]) == [
+        UniqueCleanColname("  1"),
+        UniqueCleanColname("  2", is_numbered=True),
+    ]
+
+
 # To save maintenance hassle, tests for `gen_unique_clean_colnames_and_warn()` assume
 # `gen_unique_colnames_and_warn() is implemented in terms of `gen_unique_colnames()`.
 # So we only need to test the warning logic, not the generate-unique-colnames logic.
