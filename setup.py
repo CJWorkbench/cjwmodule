@@ -57,7 +57,7 @@ setup(
     packages=find_packages(
         exclude=["tests", "tests.*", "maintenance", "maintenance.*"]
     ),
-    install_requires=["httpx~=0.14.2", "pyarrow~=1.0"],
+    install_requires=["httpx~=0.16.1", "pyarrow~=1.0"],
     extras_require={"maintenance": ["babel~=2.8.0"]},
     cmdclass={"extract_messages": ExtractMessagesCommand},
 )
