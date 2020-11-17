@@ -57,7 +57,9 @@ setup(
     packages=find_packages(
         exclude=["tests", "tests.*", "maintenance", "maintenance.*"]
     ),
-    install_requires=["httpx~=0.16.1", "pyarrow~=1.0"],
-    extras_require={"maintenance": ["babel~=2.8.0"]},
+    # google-re2==0.0.5 is the last version to support Debian Buster's libre2-5
+    # When we upgrade Debian (or google-re2 gets wheels), remove the constraint.
+    install_requires=["google-re2==0.0.5", "httpx~=0.16.1", "pyarrow~=2.0"],
+    extras_require={"maintenance": ["babel~=2.9.0"]},
     cmdclass={"extract_messages": ExtractMessagesCommand},
 )

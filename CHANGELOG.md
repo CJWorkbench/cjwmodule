@@ -1,3 +1,13 @@
+v3.0.0 - 2020-11-17
+-------------------
+
+* Bump pyarrow dependency to ~=2.0
+* Require `google-re2==0.0.5` -- an old version that matches the version
+  of `libre2-5` in Debian Buster.
+* `cjwmodule.arrow.condition`: calculates masks using a condition DSL.
+
+This is a major version change because dependencies have changed.
+
 v2.0.1 - 2020-10-26
 -------------------
 

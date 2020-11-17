@@ -3,6 +3,7 @@ Utilities for [CJWorkbench](https://github.com/CJWorkbench/cjworkbench) modules.
 Workbench modules may _optionally_ depend on the latest version of this Python
 package for its handy utilities:
 
+* `cjwmodule.arrow.condition`: functions to create Arrow table masks.
 * `cjwmodule.arrow.format`: functions to convert Arrow arrays to text.
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
@@ -15,8 +16,9 @@ Developing
 0. Run `tox` to confirm that unit tests pass
 1. Write a failing unit test in `tests/`
 2. Make it pass by editing code in `cjwmodule/`
-3. `black cjwmodule tests && isort --recursive cjwmodule tests`
-4. Submit a pull request
+3. `black cjwmodule tests && isort cjwmodule tests`
+4. `./setup.py extract_messages`
+5. Submit a pull request
 
 Be very, very, very careful to preserve a consistent API. Workbench will
 upgrade this dependency without module authors' explicit consent. Add new
