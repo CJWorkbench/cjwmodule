@@ -2,17 +2,7 @@ import functools
 import math
 import re
 import warnings
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Pattern,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Literal, Optional, Pattern, Tuple, Union
 
 import numpy as np
 import pyarrow as pa
