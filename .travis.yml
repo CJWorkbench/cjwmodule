@@ -17,7 +17,7 @@ install:
 script:
 - pyflakes .
 - black --check .
-- isort --check-only --diff --recursive cjwmodule tests
+- isort --check-only --diff cjwmodule tests
 - pytest --verbose
 - ./setup.py extract_messages --check
 deploy:
