@@ -214,14 +214,6 @@ def test_text_is_empty_regex_case_sensitive():
     )
 
 
-def test_text_is_dictionary():
-    _assert_condition_mask(
-        {"A": pa.array(["fred", "not fred", None]).dictionary_encode()},
-        TEXT("is", "A", "fred"),
-        "100",
-    )
-
-
 def test_cell_is_empty_number():
     _assert_condition_mask({"A": pa.array([1, 2, None])}, CELL("is_empty", "A"), "001")
 

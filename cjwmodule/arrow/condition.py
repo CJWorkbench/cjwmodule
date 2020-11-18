@@ -8,7 +8,6 @@ from typing import (
     Dict,
     List,
     Literal,
-    NamedTuple,
     Optional,
     Pattern,
     Tuple,
@@ -140,7 +139,6 @@ def _dictionary_array_to_mask(
         _dictionary_array_to_mask(arr, func)  # [False, True, False, True, True, False]
     """
     index_mask = func(array.dictionary)  # index => [include?]
-    true = pa.scalar(True)
     index_set = pyarrow.array(
         [i for i, v in enumerate(index_mask) if v.is_valid and v.as_py()],
         type=array.indices.type,
