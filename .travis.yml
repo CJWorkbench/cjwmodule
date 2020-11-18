@@ -1,11 +1,17 @@
 language: python
 os: linux
-dist: xenial
+dist: focal
+addons:
+  apt:
+    packages:
+    - libre2-5  # for google-re2
+    - libre2-dev  # for google-re2
+    - pybind11-dev  # for google-re2
 python:
 - '3.8'
 install:
 - pip uninstall -y black pyflakes isort pytest pytest-asyncio  # Wipe Travis environment
-- pip install black pyflakes isort pytest~=5.4.0 pytest-asyncio~=0.14.0
+- pip install black pyflakes isort pytest~=6.0 pytest-asyncio~=0.14.0
 - pip install -e .[maintenance]
 - pip freeze
 script:
