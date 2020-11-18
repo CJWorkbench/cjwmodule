@@ -1,12 +1,11 @@
 import datetime
-import re
 from typing import Any, Dict
 
 import numpy as np
 import pyarrow as pa
 import pytest
 
-from cjwmodule.arrow.condition import condition_to_mask
+from cjwmodule.arrow.condition import ConditionError, condition_to_mask
 
 
 def NOT(condition):
@@ -126,8 +125,12 @@ def test_text_contains_regex_case_insensitive():
 
 
 def test_text_contains_regex_parse_error():
-    with pytest.raises(re.error, match="no argument for repetition operator: *"):
+    with pytest.raises(ConditionError) as excinfo:
         condition_to_mask(pa.table({"A": ["x"]}), TEXT("is", "A", "*", regex=True))
+
+    assert [(e.pattern, e.msg) for e in excinfo.value.errors] == [
+        ("*", "no argument for repetition operator: *")
+    ]
 
 
 def test_text_contains_regex_null_dictionary():
@@ -448,6 +451,23 @@ def test_not():
         NOT(TEXT("contains", "A", "fred")),
         "00110",
     )
+
+
+def test_and_or_not_combine_regex_parse_errors():
+    with pytest.raises(ConditionError) as excinfo:
+        condition_to_mask(
+            pa.table({"A": ["x"]}),
+            OR(
+                AND(TEXT("is", "A", "*", regex=True), TEXT("is", "A", "+", regex=True)),
+                NOT(TEXT("is", "A", "[", regex=True)),
+            ),
+        )
+
+    assert [(e.pattern, e.msg) for e in excinfo.value.errors] == [
+        ("*", "no argument for repetition operator: *"),
+        ("+", "no argument for repetition operator: +"),
+        ("[", "missing ]: ["),
+    ]
 
 
 def test_recurse():

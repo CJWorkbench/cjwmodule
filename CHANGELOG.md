@@ -1,3 +1,9 @@
+v3.1.0 - 2020-11-18
+-------------------
+
+* `cjwmodule.arrow.condition`: Accumulate regex errors into `ConditionError`.
+  `.msg` and `.pattern` remain available for backwards compatibility.
+
 v3.0.0 - 2020-11-17
 -------------------
 

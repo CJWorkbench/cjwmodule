@@ -1,4 +1,3 @@
-import functools
 import math
 import re
 import warnings
@@ -9,7 +8,29 @@ import pyarrow as pa
 import pyarrow.compute
 import re2
 
-__all__ = ["condition_to_mask"]
+__all__ = ["ConditionError", "condition_to_mask"]
+
+
+class ConditionError(Exception):
+    def __init__(self, errors):
+        super().__init__(self, errors[0].msg)
+        self.errors = errors
+
+    @property
+    def msg(self):
+        warnings.warn(
+            "You should read ConditionError.errors now: a list of re.error",
+            DeprecationWarning,
+        )
+        return self.errors[0].msg
+
+    @property
+    def pattern(self):
+        warnings.warn(
+            "You should read ConditionError.errors now: a list of re.error",
+            DeprecationWarning,
+        )
+        return self.errors[0].pattern
 
 
 def _str_to_regex(s: str, case_sensitive: bool) -> Pattern:
@@ -24,29 +45,45 @@ def _str_to_regex(s: str, case_sensitive: bool) -> Pattern:
         return re2.compile(s, options)
     except re2.error as err:
         msg = str(err.args[0], encoding="utf-8", errors="replace")
-        raise re.error(msg, pattern=s)
+        raise ConditionError([re.error(msg, pattern=s)]) from None
+
+
+def _and_or_condition_to_mask(
+    table, reducer, *, conditions: List[Dict[str, Any]]
+) -> pa.ChunkedArray:
+    errors = []
+    mask = None
+    for condition in conditions:
+        try:
+            new_mask = condition_to_mask(table, condition)
+        except ConditionError as err:
+            errors.extend(err.errors)
+            new_mask = _all_false(table.columns[0])
+        if mask is None:
+            mask = new_mask
+        else:
+            mask = reducer(mask, new_mask)
+    if errors:
+        raise ConditionError(errors)
+    return mask
 
 
 def _and_condition_to_mask(
     table, *, conditions: List[Dict[str, Any]]
 ) -> pa.ChunkedArray:
-    return functools.reduce(
-        pa.compute.and_,
-        (condition_to_mask(table, condition) for condition in conditions),
-    )
+    return _and_or_condition_to_mask(table, pa.compute.and_, conditions=conditions)
 
 
 def _or_condition_to_mask(
     table, *, conditions: List[Dict[str, Any]]
 ) -> pa.ChunkedArray:
-    return functools.reduce(
-        pa.compute.or_,
-        (condition_to_mask(table, condition) for condition in conditions),
-    )
+    return _and_or_condition_to_mask(table, pa.compute.or_, conditions=conditions)
 
 
 def _not_condition_to_mask(table, *, condition: Dict[str, Any]) -> pa.ChunkedArray:
-    return pa.compute.invert(condition_to_mask(table, condition))
+    return pa.compute.invert(
+        condition_to_mask(table, condition)
+    )  # raises ConditionError
 
 
 def _array_map_to_bool(
@@ -75,6 +112,8 @@ def _build_text_array_masking_function(
 ) -> Callable[[Union[pa.Array, pa.StringArray]], pa.BooleanArray]:
     """Build a callback for converting Strings to a boolean mask.
 
+    Raise ConditionError with `errors=[re.error(...)]` on invalid regex.
+
     Usage:
 
         masking_function = _build_text_array_masking_function("foo", "is", True, False)
@@ -89,7 +128,7 @@ def _build_text_array_masking_function(
     The returned function guarantees not-null outputs.
     """
     if regex:
-        pattern = _str_to_regex(value, case_sensitive)
+        pattern = _str_to_regex(value, case_sensitive)  # raise ConditionError
         pattern_func = {"text_is": pattern.fullmatch, "text_contains": pattern.search}[
             operation
         ]
@@ -141,7 +180,10 @@ def _dictionary_array_to_mask(
 def _text_column_to_mask(
     column: pa.ChunkedArray, func: Callable[[pa.StringArray], pa.BooleanArray]
 ) -> pa.ChunkedArray:
-    """Calls func(column) if column is StringArray; does dictionary magic otherwise."""
+    """Calls func(column) if column is StringArray; does dictionary magic otherwise.
+
+    Raise ConditionError with `errors=[re.error(...)]` on invalid regex.
+    """
     if pa.types.is_dictionary(column.type):
         return pa.chunked_array(
             [_dictionary_array_to_mask(chunk, func) for chunk in column.chunks],
@@ -160,18 +202,23 @@ def _text_condition_to_mask(
     isCaseSensitive: bool,
     isRegex: bool
 ) -> pa.ChunkedArray:
+    """Calculate a mask from `table` and arguments.
+
+    Raise ConditionError with `errors=[re.error(...)]` on invalid regex.
+    """
+
     func = _build_text_array_masking_function(
         operation, value, isCaseSensitive, isRegex
     )
     return _text_column_to_mask(table[column], func)
 
 
-def _int_column_no_matches(column: pa.ChunkedArray, value: None) -> pa.ChunkedArray:
+def _all_false(column: pa.ChunkedArray, value=None) -> pa.ChunkedArray:
     any_bools = pa.compute.is_valid(column)
     return pa.compute.xor(any_bools, any_bools)  # all-false
 
 
-def _int_column_all_matches(column: pa.ChunkedArray, value: None) -> pa.ChunkedArray:
+def _all_non_null_true(column: pa.ChunkedArray, value=None) -> pa.ChunkedArray:
     return pa.compute.is_valid(column)
 
 
@@ -277,8 +324,8 @@ def _number_condition_to_mask(
     )
 
     func = {
-        "all_true": _int_column_all_matches,
-        "all_false": _int_column_no_matches,
+        "all_true": _all_non_null_true,
+        "all_false": _all_false,
         "number_is": pa.compute.equal,
         "number_is_greater_than": pa.compute.greater,
         "number_is_greater_than_or_equals": pa.compute.greater_equal,
@@ -389,7 +436,8 @@ def condition_to_mask(table: pa.Table, condition: Dict[str, Any]) -> pa.ChunkedA
 
     The output has no nulls.
 
-    Raise re.error with valid `pattern` and `msg` on invalid regex. (The regex
-    format is re2, but re.error holds a `.pattern` that callers may want.)
+    Raise ConditionError on invalid regex. `condition_errors.errors` is a
+    list of `re.error` with valid `pattern` and `msg`. (The regex format is re2,
+    but we wrap it in `re.error` for the `.pattern` that callers may want.)
     """
     return _condition_to_mask_by_kwargs(table, **condition)
