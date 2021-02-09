@@ -173,7 +173,12 @@ def _dictionary_array_to_mask(
         type=array.indices.type,
         size=index_mask.true_count,
     )
-    mask = pa.compute.is_in(array.indices, value_set=index_set, skip_null=True)
+    try:
+        # pyarrow 3.x
+        mask = pa.compute.is_in(array.indices, value_set=index_set, skip_nulls=True)
+    except TypeError:
+        # pyarrow 2.x
+        mask = pa.compute.is_in(array.indices, value_set=index_set, skip_null=True)
     return pa.compute.fill_null(mask, False)
 
 
