@@ -1,9 +1,8 @@
-import _socket
 import asyncio
 import io
 import struct
 
-import httpx
+import _socket
 import pytest
 
 from cjwmodule.http.client import download
