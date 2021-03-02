@@ -1,3 +1,8 @@
+v3.3.1 - 2020-03-02
+-------------------
+
+* Fix pyarrow dependency syntax, to fix pip warnings
+
 v3.3.0 - 2020-03-02
 -------------------
 
