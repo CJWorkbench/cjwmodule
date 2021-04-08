@@ -5,10 +5,13 @@ package for its handy utilities:
 
 * `cjwmodule.arrow.condition`: functions to create Arrow table masks.
 * `cjwmodule.arrow.format`: functions to convert Arrow arrays to text.
+* `cjwmodule.arrow.types`: types your Arrow module may accept and return.
+* `cjwmodule.arrow.testing`: helpers for programming tests.
 * `cjwmodule.http`: HTTP helpers, including the handy `httpfile` format.
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
 * `cjwmodule.testing`: Functions to help in unit testing.
 * `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
+* `cjwmodule.types`: Types your module may accept and return.
 
 Developing
 ==========
@@ -22,7 +25,7 @@ Developing
 
 Be very, very, very careful to preserve a consistent API. Workbench will
 upgrade this dependency without module authors' explicit consent. Add new
-features; fix bugs. Never change functionality.
+features; fix bugs. Don't alter existing behavior.
 
 I18n
 ====
@@ -32,6 +35,7 @@ I18n
 Strings in `cjwmodule` can be marked for translation using `cjwmodule.i18n._trans_cjwmodule`.
 Each translation message must have a (unique) ID. ICU is supported for the content.
 For example,
+
 ```python
 from cjwmodule.i18n import _trans_cjwmodule
 
@@ -48,6 +52,7 @@ without_arguments = _trans_cjwmodule(
     "Something is wrong",
 )
 ```
+
 Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an error/warning or quick fix is expected.
 
 ### Creating `po` catalogs

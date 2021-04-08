@@ -1,3 +1,9 @@
+v3.4.0 - 2021-04-08
+-------------------
+
+* Introduce `cjwmodule.types`
+* Introduce `cjwmodule.arrow.testing`
+
 v3.3.1 - 2020-03-02
 -------------------
 
