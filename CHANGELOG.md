@@ -1,3 +1,12 @@
+v4.0.0 - 2021-04-09
+-------------------
+
+* Require `built-google-re2`. No more pinning to Debian Buster.
+
+This is a major version upgrade because it changes dependencies. Users
+should not install `cjwmodule` alongside `google-re2`: they should install
+it alongside `built-google-re2` instead.
+
 v3.4.0 - 2021-04-08
 -------------------
 
