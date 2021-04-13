@@ -1,3 +1,8 @@
+v4.0.2 - 2021-04-13
+-------------------
+
+* `make_column("A", ["x"], dictionary=True)` shortcut for dictionary encoding
+
 v4.0.1 - 2021-04-13
 -------------------
 

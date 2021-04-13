@@ -19,11 +19,13 @@ def test_build_table_infer_type():
         make_column("B", [datetime.date(2021, 4, 7)]),
         make_column("C", [datetime.datetime(2021, 4, 7, 19, 24, 1, 1)]),
         make_column("D", [1.0]),
+        make_column("dict", ["x"], dictionary=True),
     )
     assert table["A"].type == pa.string()
     assert table["B"].type == pa.date32()
     assert table["C"].type == pa.timestamp("ns")
     assert table["D"].type == pa.float64()
+    assert table["dict"].type == pa.dictionary(pa.int32(), pa.string())
 
 
 def test_make_column_accept_number_format():
@@ -86,6 +88,12 @@ def test_make_column_timestamp_interpret_local_datetime_as_utc():
     column = make_column("A", [datetime.datetime(2021, 4, 8, 13, 39, 1, 123456)])
     assert column.array.type == pa.timestamp("ns")  # no TZ info
     assert column.array.cast(pa.int64()) == pa.array([1617889141123456000])
+
+
+def test_make_column_dictionary():
+    column = make_column("A", ["x"], dictionary=True)
+    assert column.array.type == pa.dictionary(pa.int32(), pa.string())
+    assert column.array.cast(pa.string()) == pa.array(["x"])
 
 
 def test_assert_arrow_table_equals_check_number_type():

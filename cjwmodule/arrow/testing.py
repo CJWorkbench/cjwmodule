@@ -33,6 +33,7 @@ def make_column(
     values: List[Any],
     type: pa.DataType = None,
     *,
+    dictionary: bool = False,
     format: Optional[str] = None,
     unit: Optional[str] = None,
 ) -> _Column:
@@ -42,7 +43,8 @@ def make_column(
 
     * `column()` ensures all timestamp units are "ns"
     * `column()` ensures all numeric arrays have "format" metadata
-    * `column()` ensures all date32 arrays have a "unit"
+    * `column()` ensures all date32 arrays have "unit" metadata
+    * `column(..., dictionary=True)` dictionary-encodes text columns
     """
     array = pa.array(values, type)
     if (
@@ -53,6 +55,7 @@ def make_column(
         array = pa.array(values, type=pa.timestamp("ns"))
 
     if pa.types.is_floating(array.type) or pa.types.is_integer(array.type):
+        assert not dictionary
         assert unit is None
         if format is None:
             format = "{:,}"
@@ -60,6 +63,7 @@ def make_column(
             parse_number_format(format)  # or raise -- broken test!
         metadata = {"format": format}
     elif pa.types.is_date32(array.type):
+        assert not dictionary
         assert format is None
         if unit is None:
             unit = "day"
@@ -69,7 +73,13 @@ def make_column(
                     "unit must be day, week, month, quarter or year; got: %s" % unit
                 )
         metadata = {"unit": unit}
+    elif pa.types.is_string(array.type) and dictionary:
+        assert format is None
+        assert unit is None
+        array = array.dictionary_encode()
+        metadata = None
     else:
+        assert not dictionary
         assert format is None
         assert unit is None
         metadata = None
