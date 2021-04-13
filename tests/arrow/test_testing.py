@@ -3,7 +3,12 @@ import datetime
 import pyarrow as pa
 import pytest
 
-from cjwmodule.arrow.testing import assert_result, make_column, make_table
+from cjwmodule.arrow.testing import (
+    assert_arrow_table_equals,
+    assert_result_equals,
+    make_column,
+    make_table,
+)
 from cjwmodule.arrow.types import ArrowRenderResult
 from cjwmodule.types import I18nMessage, RenderError
 
@@ -83,60 +88,60 @@ def test_make_column_timestamp_interpret_local_datetime_as_utc():
     assert column.array.cast(pa.int64()) == pa.array([1617889141123456000])
 
 
-def test_assert_result_check_number_type():
+def test_assert_arrow_table_equals_check_number_type():
     table1 = make_table(make_column("A", [1, 2, 3], pa.int16()))
     table2 = make_table(make_column("A", [1, 2, 3], pa.uint16()))
     with pytest.raises(AssertionError):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_number_format():
+def test_assert_arrow_table_equals_check_number_format():
     table1 = make_table(make_column("A", [1, 2, 3], format="{:,}"))
     table2 = make_table(make_column("A", [1, 2, 3], format="${:,}"))
     with pytest.raises(AssertionError):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_number_equal():
+def test_assert_arrow_table_equals_check_number_equal():
     table1 = make_table(make_column("A", [0.0, 0.6, None]))
     table2 = make_table(make_column("A", [-0.0, 0.6, None]))
-    assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+    assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_number_different():
+def test_assert_arrow_table_equals_check_number_different():
     table1 = make_table(make_column("A", [1, 2, 3]))
     table2 = make_table(make_column("A", [1, 2, -3]))
     with pytest.raises(AssertionError, match=r"\n-3\n\+-3"):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_date_unit():
+def test_assert_arrow_table_equals_check_date_unit():
     table1 = make_table(make_column("A", [datetime.date(2021, 4, 1)], unit="day"))
     table2 = make_table(make_column("A", [datetime.date(2021, 4, 1)], unit="month"))
     with pytest.raises(
         AssertionError, match=r"-\{b'unit': b'month'\}\n\+\{b'unit': b'day'\}"
     ):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_column_names():
+def test_assert_arrow_table_equals_check_column_names():
     table1 = make_table(make_column("A", [1]), make_column("B", [1]))
     table2 = make_table(make_column("A", [1]), make_column("C", [1]))
     with pytest.raises(AssertionError, match=r"-\['A', 'C'\]\n\+\['A', 'B'\]"):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_timestamp_tz():
+def test_assert_arrow_table_equals_check_timestamp_tz():
     table1 = pa.table({"A": pa.array([1617889141123456000], pa.timestamp("ns", "UTC"))})
     table2 = pa.table({"A": pa.array([1617889141123456000], pa.timestamp("ns"))})
     with pytest.raises(
         AssertionError,
         match=r"-pyarrow.Field<A: timestamp\[ns\]>\n\+pyarrow.Field<A: timestamp\[ns, tz=UTC\]>",
     ):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_field_metadata():
+def test_assert_arrow_table_equals_check_field_metadata():
     table1 = pa.table(
         {"A": [1]},
         schema=pa.schema(
@@ -148,19 +153,19 @@ def test_assert_result_check_field_metadata():
         schema=pa.schema([pa.field("A", pa.int64(), metadata={"format": "{:,}"})]),
     )
     with pytest.raises(AssertionError, match=r"\n\+\{b.*?b'bar'\}"):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_table_metadata():
+def test_assert_arrow_table_equals_check_table_metadata():
     table1 = make_table(make_column("A", [1])).replace_schema_metadata({"foo": "bar"})
     table2 = make_table(make_column("A", [1]))
     with pytest.raises(AssertionError, match=r"-None\n\+\{"):
-        assert_result(ArrowRenderResult(table1), ArrowRenderResult(table2))
+        assert_arrow_table_equals(table1, table2)
 
 
-def test_assert_result_check_errors():
+def test_assert_result_equals_check_errors():
     with pytest.raises(AssertionError, match=r"-\[Render.*\n\+\[\]"):
-        assert_result(
+        assert_result_equals(
             ArrowRenderResult(make_table()),
             ArrowRenderResult(
                 make_table(), errors=[RenderError(I18nMessage("foo", {}, "module"))]
@@ -168,9 +173,33 @@ def test_assert_result_check_errors():
         )
 
 
-def test_assert_result_check_json():
+def test_assert_result_equals_check_json():
     with pytest.raises(AssertionError, match=r"-\{'foo': 'bar'\}\n\+\{\}"):
-        assert_result(
+        assert_result_equals(
             ArrowRenderResult(make_table()),
             ArrowRenderResult(make_table(), json={"foo": "bar"}),
         )
+
+
+def test_assert_result_equals_check_table():
+    table1 = make_table(make_column("A", [1])).replace_schema_metadata({"foo": "bar"})
+    table2 = make_table(make_column("A", [1]))
+    with pytest.raises(AssertionError, match=r"-None\n\+\{"):
+        assert_result_equals(ArrowRenderResult(table1), ArrowRenderResult(table2))
+
+
+def test_assert_result_equals_ok():
+    table1 = make_table(make_column("A", [1]))
+    table2 = make_table(make_column("A", [1]))
+    assert_result_equals(
+        ArrowRenderResult(
+            table1,
+            errors=[RenderError(I18nMessage("foo", {}, "module"))],
+            json={"foo": "bar"},
+        ),
+        ArrowRenderResult(
+            table2,
+            errors=[RenderError(I18nMessage("foo", {}, "module"))],
+            json={"foo": "bar"},
+        ),
+    )

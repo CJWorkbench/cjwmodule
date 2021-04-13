@@ -11,7 +11,8 @@ from .format import parse_number_format
 from .types import ArrowRenderResult
 
 __all__ = [
-    "assert_result",
+    "assert_arrow_table_equals",
+    "assert_result_equals",
     "make_column",
     "make_table",
 ]
@@ -106,7 +107,63 @@ def make_table(*columns: _Column) -> pa.Table:
     return pa.table([column.array for column in columns], schema=schema)
 
 
-def assert_result(actual: ArrowRenderResult, expected: ArrowRenderResult) -> None:
+def assert_arrow_table_equals(actual: pa.Table, expected: pa.Table) -> None:
+    """Assert that `actual` and `expected` mean the same table, in Workbench.
+
+    Workbench rules:
+
+        * Numbers must have the same type: int16 and uint16 are different.
+        * Numbers must have the same format.
+        * Numbers must be the same ... within a margin of error.
+        * Dates must have the same unit: day and month are different.
+    """
+    assert (
+        actual.column_names == expected.column_names
+    ), "actual columns != expected columns\n-%r\n+%r" % (
+        expected.column_names,
+        actual.column_names,
+    )
+    assert (
+        actual.schema.metadata == expected.schema.metadata
+    ), "actual table metadata != expected table metadata\n-%r\n+%r" % (
+        expected.schema.metadata,
+        actual.schema.metadata,
+    )
+    for i in range(actual.num_columns):
+        actual_field = actual.field(i)
+        expected_field = expected.field(i)
+        assert (
+            actual_field == expected_field
+        ), "column %r: actual field != expected field\n-%r\n+%r" % (
+            actual_field.name,
+            expected_field,
+            actual_field,
+        )
+        assert (
+            actual_field.metadata == expected_field.metadata
+        ), "column %r: actual metadata != expected metadata\n-%r\n+%r" % (
+            actual_field.name,
+            expected_field.metadata,
+            actual_field.metadata,
+        )
+    for column_name, actual_column, expected_column in zip(
+        actual.column_names, actual.itercolumns(), expected.itercolumns()
+    ):
+        assert actual_column.num_chunks == expected_column.num_chunks
+        for chunk_index, (actual_chunk, expected_chunk) in enumerate(
+            zip(actual_column.chunks, expected_column.chunks)
+        ):
+            diff = actual_chunk.diff(expected_chunk)
+            assert not diff, "actual != expected data in column %r, chunk %d:%s" % (
+                column_name,
+                chunk_index,
+                diff,
+            )
+
+
+def assert_result_equals(
+    actual: ArrowRenderResult, expected: ArrowRenderResult
+) -> None:
     """Assert that `actual` and `expected` behave identically, in Workbench.
 
     Workbench rules:
@@ -123,45 +180,4 @@ def assert_result(actual: ArrowRenderResult, expected: ArrowRenderResult) -> Non
         expected.json,
         actual.json,
     )
-    assert (
-        actual.table.column_names == expected.table.column_names
-    ), "actual columns != expected columns\n-%r\n+%r" % (
-        expected.table.column_names,
-        actual.table.column_names,
-    )
-    assert (
-        actual.table.schema.metadata == expected.table.schema.metadata
-    ), "actual table metadata != expected table metadata\n-%r\n+%r" % (
-        expected.table.schema.metadata,
-        actual.table.schema.metadata,
-    )
-    for i in range(actual.table.num_columns):
-        actual_field = actual.table.field(i)
-        expected_field = expected.table.field(i)
-        assert (
-            actual_field == expected_field
-        ), "column %r: actual field != expected field\n-%r\n+%r" % (
-            actual_field.name,
-            expected_field,
-            actual_field,
-        )
-        assert (
-            actual_field.metadata == expected_field.metadata
-        ), "column %r: actual metadata != expected metadata\n-%r\n+%r" % (
-            actual_field.name,
-            expected_field.metadata,
-            actual_field.metadata,
-        )
-    for column_index, (actual_column, expected_column) in enumerate(
-        zip(actual.table.itercolumns(), expected.table.itercolumns())
-    ):
-        assert actual_column.num_chunks == expected_column.num_chunks
-        for chunk_index, (actual_chunk, expected_chunk) in enumerate(
-            zip(actual_column.chunks, expected_column.chunks)
-        ):
-            diff = actual_chunk.diff(expected_chunk)
-            assert not diff, "actual != expected data in column %r, chunk %d:%s" % (
-                actual.table.column_names[column_index],
-                chunk_index,
-                diff,
-            )
+    assert_arrow_table_equals(actual.table, expected.table)

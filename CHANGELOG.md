@@ -1,3 +1,11 @@
+v4.0.1 - 2021-04-13
+-------------------
+
+* Revamp `cjwmodule.arrow.testing`.
+
+This would normally be a major version upgrade, but we assume nobody used the
+old version.
+
 v4.0.0 - 2021-04-09
 -------------------
 
