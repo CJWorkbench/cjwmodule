@@ -11,6 +11,7 @@ package for its handy utilities:
 * `cjwmodule.i18n`: A `trans()` function for producing translatable text.
 * `cjwmodule.testing`: Functions to help in unit testing.
 * `cjwmodule.util.colnames`: Functions to help build a valid table's column names.
+* `cjwmodule.spec`: Functions to load and validate module spec files.
 * `cjwmodule.types`: Types your module may accept and return.
 
 Developing

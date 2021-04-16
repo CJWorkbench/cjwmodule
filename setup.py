@@ -57,7 +57,15 @@ setup(
     packages=find_packages(
         exclude=["tests", "tests.*", "maintenance", "maintenance.*"]
     ),
-    install_requires=["built-google-re2~=0.0.7", "httpx~=0.17", "pyarrow>=2.0,<4.0"],
+    install_requires=[
+        "google-re2~=0.1.20210401",
+        "httpx~=0.17",
+        "jsonschema~=3.2.0",
+        "pyarrow>=2.0,<4.0",
+        "pytz>=2021.1",
+        "pyyaml~=5.4.1",
+        "rfc3987~=1.3.8",  # for jsonschema 'uri' format
+    ],
     extras_require={"maintenance": ["babel~=2.9.0"]},
     cmdclass={"extract_messages": ExtractMessagesCommand},
 )

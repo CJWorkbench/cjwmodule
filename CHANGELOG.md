@@ -1,3 +1,10 @@
+v4.1.0 - 2021-04-16
+-------------------
+
+* `cjwmodule.spec`: Workbench's module machinery, available for modules. Now
+  you can write unit tests that agree with the module's spec.
+* Back to `google-re2`. v0.1+ includes wheels.
+
 v4.0.2 - 2021-04-13
 -------------------
 
