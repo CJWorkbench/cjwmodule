@@ -149,6 +149,12 @@ def test_assert_arrow_table_equals_check_timestamp_tz():
         assert_arrow_table_equals(table1, table2)
 
 
+def test_assert_arrow_table_equals_check_dictionary():
+    table1 = pa.table({"A": pa.array(["x", "y", None, "x"]).dictionary_encode()})
+    table2 = pa.table({"A": pa.array(["x", "y", None, "x"]).dictionary_encode()})
+    assert_arrow_table_equals(table1, table2)
+
+
 def test_assert_arrow_table_equals_check_field_metadata():
     table1 = pa.table(
         {"A": [1]},
