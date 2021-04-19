@@ -1,3 +1,8 @@
+v4.1.1 - 2021-04-19
+-------------------
+
+* Package `schema.yaml` (and migrate to Poetry for dev+deploy)
+
 v4.1.0 - 2021-04-16
 -------------------
 

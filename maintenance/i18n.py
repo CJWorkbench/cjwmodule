@@ -291,3 +291,14 @@ def assert_messages_are_same(message: Message, other_message: Message):
         message.locations,
         other_message.locations,
     )
+
+
+if __name__ == "__main__":
+    import sys
+
+    if sys.argv[1] == "check":
+        check()
+    elif sys.argv[1] == "extract":
+        extract()
+    else:
+        raise ValueError("Usage: %s check|extract" % sys.argv[0])

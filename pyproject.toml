@@ -1,0 +1,70 @@
+[build-system]
+requires = ["poetry_core>=1.0.0", "cython"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "cjwmodule"
+version = "0.0.0"
+description = "Utilities for Workbench modules"
+authors = ["Adam Hooper <adam@adamhooper.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+google-re2 = "~= 0.1.20210401"
+httpx = "~= 0.17"
+jsonschema = "~= 3.2.0"
+pyarrow = ">=2.0.0, <4.0.0"
+python = "~=3.8.0"
+pytz = "~= 2021.1"
+pyyaml = "~= 5.4.1"
+rfc3987 = "~=1.3.8" # for jsonschema 'uri' format
+
+[tool.poetry.scripts]
+check-messages = "maintenance.i18n:check"
+extract-messages = "maintenance.i18n:extract"
+
+[tool.poetry.dev-dependencies]
+babel = "~= 2.9.0"
+pytest = "~=6.0"
+pytest-asyncio = "~= 0.15.0"
+pytest-cov = "~= 2.10"
+pyflakes = ">= 2.2"
+black = "~= 20.8b1"
+isort = "~= 5.8.0"
+
+[tool.isort]
+# Black compatibility
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+skipsdist = True
+envlist = py38-{pyflakes,black,isort,pytest}
+
+[flake8]
+exclude = venv/*,tox/*,specs/*,build/*
+ignore = E123,E128,E266,E402,W503,E731,W601
+max-line-length = 88
+
+[testenv]
+skip_install = true
+deps =
+  pyflakes: pyflakes>=2.2
+  black: black
+  isort: isort
+  pytest: poetry
+commands_pre =
+  pytest: poetry install -v
+commands =
+  pyflakes: pyflakes cjwmodule tests
+  black: black --check cjwmodule tests
+  isort: isort --check --diff cjwmodule tests
+  pytest: poetry run pytest --cov=cjwmodule --cov-report term-missing -v
+"""

@@ -18,15 +18,14 @@ Developing
 ==========
 
 0. Run `tox` to confirm that unit tests pass
-1. Write a failing unit test in `tests/`
+1. Write a failing unit test in `tests/`. (`tox` should fail now.)
 2. Make it pass by editing code in `cjwmodule/`
-3. `black cjwmodule tests && isort cjwmodule tests`
-4. `./setup.py extract_messages`
+3. Run `poetry run extract-messages` if i18n data changed
+4. Run `tox` to confirm that unit tests pass again
 5. Submit a pull request
 
-Be very, very, very careful to preserve a consistent API. Workbench will
-upgrade this dependency without module authors' explicit consent. Add new
-features; fix bugs. Don't alter existing behavior.
+Preserve a consistent API. Workbench will upgrade this dependency without module
+authors' consent. Add new features; fix bugs. Don't alter existing behavior.
 
 I18n
 ====
@@ -54,23 +53,22 @@ without_arguments = _trans_cjwmodule(
 )
 ```
 
-Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an error/warning or quick fix is expected.
+Workbench is wired to accept the return value of `_trans_cjwmodule` wherever an
+error/warning or quick fix is expected.
 
 ### Creating `po` catalogs
 
-Calls to `_trans_cjwmodule` can (and must) be parsed to create `cjwmodule`'s `.po` files.
-Update the `.po` files with:
+Calls to `_trans_cjwmodule` can (and must) be parsed to create `cjwmodule`'s
+`.po` files.  Update the `.po` files with:
 
 ```
-./setup.py extract_messages
+poetry run extract-messages
 ```
-
-The first time you run this, you'll need to install dependencies: `pip3 install .[maintenance]`
 
 ### Unit testing
 
-In case a `_trans_cjwmodule` invocation needs to be unit tested, you can use `cjwmodule.testing.i18n.cjwmodule_i18n_message` 
-in a manner similar to the following: 
+In case a `_trans_cjwmodule` invocation needs to be unit tested, you can use
+`cjwmodule.testing.i18n.cjwmodule_i18n_message` like this:
 
 ```python
 from cjwmodule.testing.i18n import cjwmodule_i18n_message
@@ -88,11 +86,8 @@ For backwards compatibility, *messages in `cjwmodule`'s `po` files are never del
 Publishing
 ==========
 
-1. Write a new `__version__` to `cjwmodule/__init__.py`. Adhere to
-   [semver](https://semver.org). (As changes must be backwards-compatible,
-   the version will always start with `1` and look like `1.x.y`.)
-2. Prepend notes to `CHANGELOG.md` about the new version
-3. `git commit`
-4. `git tag v1.x.y`
-5. `git push --tags && git push`
-6. Wait for Travis to push our changes to PyPI
+1. Prepend notes to `CHANGELOG.md` about the new version
+2. `git commit`
+3. `git push` and wait for Travis to report success
+4. `git tag v1.x.y && git push --tags`
+5. Wait for Travis to push our changes to PyPI

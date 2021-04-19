@@ -1,29 +1,24 @@
 language: python
 os: linux
 dist: focal
-addons:
-  apt:
-    packages:
-    - libre2-5  # for google-re2
-    - libre2-dev  # for google-re2
-    - pybind11-dev  # for google-re2
 python:
 - '3.8'
-install:
-- pip uninstall -y black pyflakes isort pytest pytest-asyncio  # Wipe Travis environment
-- pip install black pyflakes isort pytest~=6.0 pytest-asyncio~=0.14.0
-- pip install -e .[maintenance]
-- pip freeze
-script:
-- pyflakes .
-- black --check .
-- isort --check-only --diff cjwmodule tests
-- pytest --verbose
-- ./setup.py extract_messages --check
-deploy:
-  provider: pypi
-  username: __token__
-  on:
-    tags: true
-  password:
-    secure: "Jn2OI3ZUIEDfS5rGZ2JT8hab7ZFasUVUauH0bZgPRUFKESPPCfKawRflQqSLgixmsPfmmX8oeeZNk0dKrOdhFlfN36M+POFKVVyeKFg09F+DbP4/37VzizWOIvIB/GxfUG7obYS9GO7gdMitDkwCiD4Cz4ynkeuCaPOwWhrFPyJLX5fR2eJ/Y4wXz1KMarQArI+n0/cg9ge2dnHTTPo9J5nBkJYAkKunWPRYbOtBG+PyuZmwo6tTP6S8KZ3qgUgDV/+AkaafWXTvk/XB/dQZ/Vo5e+2p4IKjqxh+VI09JWq+DZIcX2sAOrMptoodhbezcXrP84wtlUjiVi0YRBXY3GnFwmG1xX0jFwuqUMVuF9BdbU4S0bhwf3Z4ouVk4YvJHY9akkfiFv3uW+qmE1Jo1/R1JN8XjlWWnAmdeZeCBKErlp8AtiE7y9yCG4SbUbL8HQ505nHxmxKTAI1gVy4cGhFEiUoMvEdZhgyadIQgqxzNTNBb3PoRYktwMfQdZeHasmCmirRf8BD9ko2QqPcS/NF9kfqVmDIrZ03Z+AhzqLvRaiajOv2DpIFoMNcHhiWQ6IPe7BnEINza5kyRJ8qs2K049Sv/yxzSzr7X6F0T1JCL4XeTgRHpw46hvRPvaILCT5T/SivTfjNm2VunsiYEhYOdhoVlUQHQZrlvb03k4qU="
+before_install: python -mpip install poetry tox-travis
+install: poetry install -v
+script: tox
+jobs:
+  include:
+    - stage: deploy
+      python: "3.8"
+      before_install: python -mpip install poetry
+      install: skip
+      script: skip
+      before_deploy:
+        - poetry version $(git describe --tags --exact-match --match="v*.*.*" | cut -b2-)  # fallback "" means, "0.0.0"
+        - poetry config pypi-token.pypi "$PYPI_TOKEN"
+      deploy:
+        skip_cleanup: true  # so "poetry version" stays
+        provider: script
+        script: poetry publish --build
+        on:
+          tags: true
