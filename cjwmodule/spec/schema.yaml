@@ -248,7 +248,6 @@ definitions:
                 <<: *common_param_spec_properties
                 type: { const: numberformat }
                 name: { $ref: '#/definitions/param_specs/_lib/name' }
-                placeholder: { $ref: '#/definitions/param_specs/_lib/placeholder' }
                 default:
                     type: string
                     description: "Value to set on the user's behalf (default null)"

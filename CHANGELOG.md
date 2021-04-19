@@ -1,3 +1,8 @@
+v4.1.2 - 2021-04-19
+-------------------
+
+* spec.schema `numberformat`: disallow `placeholder`
+
 v4.1.1 - 2021-04-19
 -------------------
 
