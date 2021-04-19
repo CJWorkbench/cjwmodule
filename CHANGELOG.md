@@ -1,3 +1,8 @@
+v4.1.3 - 2021-04-19
+-------------------
+
+* (rarely-used paramschemaparser): allow column without column_types
+
 v4.1.2 - 2021-04-19
 -------------------
 

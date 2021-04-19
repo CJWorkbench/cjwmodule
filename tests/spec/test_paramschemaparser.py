@@ -20,6 +20,10 @@ def test_map_recurse():
     )
 
 
+def test_column_without_column_types():
+    assert parse({"type": "column"}) == ParamSchema.Column(column_types=None)
+
+
 def test_column_column_types_is_frozenset():
     assert parse(
         {"type": "column", "column_types": ["timestamp", "number"]}

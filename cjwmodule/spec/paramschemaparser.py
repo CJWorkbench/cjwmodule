@@ -34,7 +34,8 @@ def _parse_kwargs(type: str, **kwargs) -> ParamSchema:
         kwargs["inner_schema"] = parse(kwargs.pop("inner_dtype"))
     elif cls == ParamSchema.Column or cls == ParamSchema.Multicolumn:
         # column_types comes from JSON as a list. We need a set.
-        kwargs["column_types"] = frozenset(kwargs["column_types"])
+        if "column_types" in kwargs:
+            kwargs["column_types"] = frozenset(kwargs["column_types"])
     elif cls == ParamSchema.Enum:
         kwargs["choices"] = frozenset(kwargs["choices"])
         if kwargs["default"] not in kwargs["choices"]:
