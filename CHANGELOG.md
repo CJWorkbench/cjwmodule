@@ -1,3 +1,8 @@
+v4.1.4 - 2021-04-19
+-------------------
+
+* spec.paramschema `multichartseries`: fix validation
+
 v4.1.3 - 2021-04-19
 -------------------
 

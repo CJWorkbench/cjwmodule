@@ -7,7 +7,7 @@ of `cjwmodule`.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Dict, FrozenSet, List, Literal, Optional
 
 import re2
@@ -78,14 +78,6 @@ class ParamField(ABC):
     @classmethod
     def _from_kwargs(cls, **kwargs) -> ParamField:
         return cls(**kwargs)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Create a JSON-compatible Dict from this ParamField.
-
-        This is the inverse of `ParamField.from_dict()`. That is, in all cases,
-        `ParamField.from_dict(param_spec.to_dict()) == param_spec`.
-        """
-        return asdict(self)
 
 
 def _register_type(type_name):

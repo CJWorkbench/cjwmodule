@@ -62,9 +62,9 @@ class ParamSchemaOption(NamedTuple):
 
 def _validate_is_safe_str(value: Jsonish) -> None:
     if not isinstance(value, str):
-        raise ValueError("Value %r is not a string" % value)
+        raise ValueError("Value %r is not a string" % (value,))
     if "\x00" in value:
-        raise ValueError("Value %r is not valid text: zero byte not allowed" % value)
+        raise ValueError("Value %r is not valid text: zero byte not allowed" % (value,))
     try:
         value.encode("utf-8")
     except UnicodeError as err:
@@ -92,7 +92,7 @@ class ParamSchemaInteger(NamedTuple):
 
     def validate(self, value):
         if not isinstance(value, int):
-            raise ValueError("Value %r is not an integer" % value)
+            raise ValueError("Value %r is not an integer" % (value,))
 
 
 class ParamSchemaFloat(NamedTuple):
@@ -102,7 +102,7 @@ class ParamSchemaFloat(NamedTuple):
 
     def validate(self, value):
         if not (isinstance(value, float) or isinstance(value, int)):
-            raise ValueError("Value %r is not a float" % value)
+            raise ValueError("Value %r is not a float" % (value,))
 
 
 class ParamSchemaBoolean(NamedTuple):
@@ -112,7 +112,7 @@ class ParamSchemaBoolean(NamedTuple):
 
     def validate(self, value):
         if not isinstance(value, bool):
-            raise ValueError("Value %r is not a boolean" % value)
+            raise ValueError("Value %r is not a boolean" % (value,))
 
 
 class ParamSchemaCondition(NamedTuple):
@@ -204,7 +204,7 @@ class ParamSchemaCondition(NamedTuple):
 
     def __validate_common(self, value):
         if not isinstance(value, dict) or "operation" not in value:
-            raise ValueError("%r must be a dict with an 'operation' key" % value)
+            raise ValueError("%r must be a dict with an 'operation' key" % (value,))
 
     def __validate_common_level_0_or_1(self, value):
         keys = frozenset(value.keys())
@@ -215,7 +215,7 @@ class ParamSchemaCondition(NamedTuple):
         ):
             raise ValueError(
                 "Value must look like {'operation': 'or|and', 'conditions': [...]}; got %r"
-                % value
+                % (value,)
             )
 
     def __validate_level2(self, value):
@@ -226,7 +226,7 @@ class ParamSchemaCondition(NamedTuple):
         ):
             raise ValueError(
                 "Keys must be operation, column, value, isCaseSensitive, isRegex. Got: %r"
-                % value
+                % (value,)
             )
         if value["operation"] not in {
             "",
@@ -253,7 +253,7 @@ class ParamSchemaCondition(NamedTuple):
             "number_is_less_than_or_equals",
             "number_is_not",
         }:
-            raise ValueError("There is no such operation: %r" % value["operation"])
+            raise ValueError("There is no such operation: %r" % (value["operation"],))
         for key, wanted_type in (
             ("column", str),
             ("value", str),
@@ -298,8 +298,10 @@ class ParamSchemaMulticolumn(NamedTuple):
 
     def validate(self, value):
         if not isinstance(value, list):
-            raise ValueError("Value %r is not a list" % value)
+            raise ValueError("Value %r is not a list" % (value,))
         for v in value:
+            if not v:
+                raise ValueError("Empty column not allowed as a value in multitab")
             _validate_is_safe_str(v)
 
 
@@ -327,14 +329,14 @@ class ParamSchemaTimezone(NamedTuple):
 
     def validate(self, value):
         if value not in pytz.all_timezones_set:
-            raise ValueError("Value %r is not an IANA timezone identifier" % value)
+            raise ValueError("Value %r is not an IANA timezone identifier" % (value,))
 
 
 def _validate_is_list_of_valid_values(
     inner_schema: ParamSchema, value: Jsonish
 ) -> None:
     if not isinstance(value, list):
-        raise ValueError("Value %r is not a list" % value)
+        raise ValueError("Value %r is not a list" % (value,))
     for v in value:
         inner_schema.validate(v)
 
@@ -362,7 +364,7 @@ class ParamSchemaDict(NamedTuple):
 
     def validate(self, value):
         if not isinstance(value, dict):
-            raise ValueError("Value %r is not a dict" % value)
+            raise ValueError("Value %r is not a dict" % (value,))
 
         expect_keys = frozenset(self.properties.keys())
         actual_keys = frozenset(value.keys())
@@ -384,11 +386,14 @@ class ParamSchemaMap(NamedTuple):
     """
 
     value_schema: ParamSchema
-    default: Dict[str, Jsonish] = {}
+
+    @property
+    def default(self) -> Dict[str, Any]:
+        return {}
 
     def validate(self, value):
         if not isinstance(value, dict):
-            raise ValueError("Value %r is not a dict" % value)
+            raise ValueError("Value %r is not a dict" % (value,))
 
         for v in value.values():
             self.value_schema.validate(v)
@@ -409,10 +414,12 @@ class ParamSchemaMultitab(NamedTuple):
     default: List[str] = []
 
     def validate(self, value):
-        _validate_is_list_of_valid_values(ParamSchemaString(), value)
+        if not isinstance(value, list):
+            raise ValueError("Value %r is not a list" % (value,))
         for v in value:
             if not v:
                 raise ValueError("Empty tab not allowed as a value in multitab")
+            _validate_is_safe_str(v)
 
 
 class ParamSchemaMultichartseries(NamedTuple):
@@ -431,7 +438,7 @@ class ParamSchemaMultichartseries(NamedTuple):
                 "color": ParamSchemaString(),  # TODO enforce '#abc123' pattern
             }
         )
-        inner_schema.validate(value)
+        _validate_is_list_of_valid_values(inner_schema, value)
         for v in value:
             if not v["column"]:
                 raise ValueError("multichartseries column must be non-empty")
@@ -454,9 +461,9 @@ class ParamSchemaFile(NamedTuple):
         if value is None:
             return  # None is the default, and it's valid
         if not isinstance(value, str):
-            raise ValueError("Value %r is not a string" % value)
+            raise ValueError("Value %r is not a string" % (value,))
         if not _UUIDRegex.match(value):
-            raise ValueError("Value %r is not a UUID string representation" % value)
+            raise ValueError("Value %r is not a UUID string representation" % (value,))
 
 
 # Aliases to help with import. e.g.:

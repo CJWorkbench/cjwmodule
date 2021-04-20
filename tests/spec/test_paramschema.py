@@ -3,6 +3,19 @@ import pytest
 from cjwmodule.spec.paramschema import ParamSchema as S
 
 
+class TestBoolean:
+    def test_default_false(self):
+        assert S.Boolean().default is False
+
+    def test_validate_ok(self):
+        S.Boolean().validate(False)
+        S.Boolean().validate(True)
+
+    def test_validate_bad(self):
+        with pytest.raises(ValueError):
+            S.Boolean().validate(None)
+
+
 class TestString:
     def test_validate_emoji(self):
         S.String().validate("💩")  # do not raise
@@ -43,6 +56,9 @@ class TestFile:
 
 
 class TestTimezone:
+    def test_default(self):
+        assert S.Timezone().default == "UTC"
+
     def test_validate_ok(self):
         S.Timezone().validate("America/Montreal")  # no error
 
@@ -51,51 +67,116 @@ class TestTimezone:
             S.Timezone().validate("America/NotMontreal")
 
 
+class TestColumn:
+    def test_default(self):
+        # TODO consider changing this to None. [2021-04-20, adamhooper] I think
+        # most/all modules would be compatible.
+        assert S.Column().default == ""
+
+    def test_validate_ok(self):
+        S.Column().validate("A")
+
+    def test_validate_not_string(self):
+        with pytest.raises(ValueError, match="not a string"):
+            S.Column().validate(3)
+
+
+class TestTab:
+    def test_default(self):
+        # TODO consider changing this to None. [2021-04-20, adamhooper] I think
+        # most/all modules would be compatible.
+        assert S.Tab().default == ""
+
+    def test_validate_ok(self):
+        S.Tab().validate("tab-1")
+
+    def test_validate_not_string(self):
+        with pytest.raises(ValueError, match="not a string"):
+            S.Tab().validate(3)
+
+
 class TestMulticolumn:
-    def test_multicolumn_default(self):
+    def test_default(self):
         assert S.Multicolumn().default == []
 
-    def test_multicolumn_validate_list_of_str_ok(self):
+    def test_validate_list_of_str_ok(self):
         S.Multicolumn().validate(["x", "y"]),
 
-    def test_multicolumn_validate_list_of_non_str_is_error(self):
+    def test_validate_list_of_non_str_is_error(self):
         with pytest.raises(ValueError):
             S.Multicolumn().validate([1, 2])
 
-    def test_multicolumn_validate_str_is_error(self):
+    def test_validate_str_is_error(self):
         with pytest.raises(ValueError):
             S.Multicolumn().validate("X,Y")
 
+    def test_validate_empty_column_is_error(self):
+        with pytest.raises(ValueError, match="Empty column not allowed"):
+            S.Multicolumn().validate([""])
+
+
+class TestMultitab:
+    def test_default(self):
+        assert S.Multitab().default == []
+
+    def test_validate_list_of_str_ok(self):
+        S.Multitab().validate(["tab-1", "tab-2"]),
+
+    def test_validate_list_of_non_str_is_error(self):
+        with pytest.raises(ValueError):
+            S.Multitab().validate([1, 2])
+
+    def test_validate_str_is_error(self):
+        with pytest.raises(ValueError):
+            S.Multitab().validate("X,Y")
+
+    def test_validate_empty_tab_is_error(self):
+        with pytest.raises(ValueError, match="Empty tab not allowed"):
+            S.Multitab().validate([""])
+
 
 class TestOption:
-    def test_option_validate_inner_ok(self):
+    def test_validate_inner_ok(self):
         S.Option(S.String()).validate("foo")
 
-    def test_option_validate_inner_error(self):
+    def test_validate_inner_error(self):
         with pytest.raises(ValueError):
             S.Option(S.String()).validate(3)
 
-    def test_option_default_none(self):
+    def test_default(self):
         # [2019-06-05] We don't support non-None default on Option params
         assert S.Option(S.String(default="x")).default is None
 
 
 class TestMap:
-    def test_map_validate_ok(self):
+    def test_default(self):
+        assert S.Map(S.String()).default == {}
+
+    def test_validate_ok(self):
         schema = S.Map(value_schema=S.String())
         value = {"a": "b", "c": "d"}
         schema.validate(value)
 
-    def test_map_validate_bad_inner_schema(self):
-        schema = S.Map(value_schema=S.String())
-        value = {"a": 1, "c": 2}
-        with pytest.raises(ValueError):
-            schema.validate(value)
+    def test_validate_bad_inner_schema(self):
+        with pytest.raises(ValueError, match="not a string"):
+            S.Map(value_schema=S.String()).validate({"a": "1", "c": 2})
+
+    def test_validate_not_dict(self):
+        with pytest.raises(ValueError, match="not a dict"):
+            S.Map(value_schema=S.String()).validate([])
 
 
 class TestCondition:
     def test_default(self):
         assert S.Condition().default == {"operation": "and", "conditions": []}
+
+    def test_validate_non_dict(self):
+        with pytest.raises(ValueError):
+            S.Condition().validate([])
+
+    def test_validate_missing_operation(self):
+        with pytest.raises(ValueError):
+            S.Condition().validate({"condition": []})
 
     def test_validate_missing_conditions(self):
         with pytest.raises(ValueError):
@@ -234,3 +315,64 @@ class TestCondition:
                     "conditions": [{"operation": "or", "conditions": [comparison]}],
                 }
             )
+
+
+class TestMultiChartSeries:
+    def test_default(self):
+        assert S.Multichartseries().default == []
+
+    def test_validate_empty(self):
+        S.Multichartseries().validate([])
+
+    def test_validate_ok(self):
+        S.Multichartseries().validate(
+            [
+                dict(column="A", color="#aaaaaa"),
+                dict(column="B", color="#bbbbbb"),
+            ]
+        )
+
+    def test_validate_empty_column_bad(self):
+        with pytest.raises(ValueError, match="column must be non-empty"):
+            S.Multichartseries().validate([dict(column="", color="#000000")])
+
+    def test_validate_not_list(self):
+        with pytest.raises(ValueError, match="not a list"):
+            S.Multichartseries().validate(dict(column="A", color="#aaaaaa"))
+
+
+class TestEnum:
+    def test_validate_ok(self):
+        S.Enum(choices=frozenset(["foo", "bar"]), default="foo").validate("bar")
+
+    def test_validate_not_ok(self):
+        with pytest.raises(ValueError, match="not in choices"):
+            S.Enum(choices=frozenset(["foo", "bar"]), default="foo").validate("baz")
+
+
+class TestDict:
+    def test_default(self):
+        assert S.Dict(
+            {"foo": S.String(default="FOO"), "bar": S.Integer(default=3)}
+        ).default == {"foo": "FOO", "bar": 3}
+
+    def test_validate_ok(self):
+        S.Dict({"foo": S.String(default="FOO"), "bar": S.Integer(default=3)}).validate(
+            {"foo": "FOO", "bar": 3}
+        )
+
+    def test_validate_not_dict(self):
+        with pytest.raises(ValueError, match="not a dict"):
+            S.Dict({"foo": S.String()}).validate([])
+
+    def test_validate_missing_key(self):
+        with pytest.raises(ValueError, match="wrong keys"):
+            S.Dict({"foo": S.String(), "bar": S.String()}).validate({"foo": "x"})
+
+    def test_validate_extra_key(self):
+        with pytest.raises(ValueError, match="wrong keys"):
+            S.Dict({"foo": S.String()}).validate({"foo": "x", "bar": "y"})
+
+    def test_validate_invalid_child(self):
+        with pytest.raises(ValueError, match="not a string"):
+            S.Dict({"foo": S.String()}).validate({"foo": 3})
