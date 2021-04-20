@@ -39,6 +39,9 @@ class TestFloat:
 
 
 class TestFile:
+    def test_default_null(self):
+        assert S.File().default is None
+
     def test_validate_null(self):
         S.File().validate(None)  # do not raise
 

@@ -1,3 +1,8 @@
+v4.1.5 - 2021-04-21
+-------------------
+
+* spec.loader: fix bug that prevented param_schema from including Timezone
+
 v4.1.4 - 2021-04-19
 -------------------
 

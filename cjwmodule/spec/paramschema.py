@@ -200,7 +200,9 @@ class ParamSchemaCondition(NamedTuple):
     are omitted. (It can receive `condition: None`.)
     """
 
-    default: Dict[str, Jsonish] = {"operation": "and", "conditions": []}
+    @property
+    def default(self) -> Dict[str, Jsonish]:
+        return {"operation": "and", "conditions": []}
 
     def __validate_common(self, value):
         if not isinstance(value, dict) or "operation" not in value:
@@ -294,7 +296,10 @@ class ParamSchemaColumn(NamedTuple):
 class ParamSchemaMulticolumn(NamedTuple):
     column_types: Optional[FrozenSet[str]] = None
     tab_parameter: Optional[str] = None
-    default: List[str] = []
+
+    @property
+    def default(self) -> List[str]:
+        return []
 
     def validate(self, value):
         if not isinstance(value, list):
@@ -343,7 +348,10 @@ def _validate_is_list_of_valid_values(
 
 class ParamSchemaList(NamedTuple):
     inner_schema: ParamSchema
-    default: List[Jsonish] = []
+
+    @property
+    def default(self) -> List[Jsonish]:
+        return []
 
     def validate(self, value):
         _validate_is_list_of_valid_values(self.inner_schema, value)
@@ -402,7 +410,9 @@ class ParamSchemaMap(NamedTuple):
 class ParamSchemaTab(NamedTuple):
     """A (str) tab slug, or "" if no tab is selected."""
 
-    default: str = ""
+    @property
+    def default(self) -> str:
+        return ""
 
     def validate(self, value):
         _validate_is_safe_str(value)
@@ -411,7 +421,9 @@ class ParamSchemaTab(NamedTuple):
 class ParamSchemaMultitab(NamedTuple):
     """A list of tabs; empty values not allowed."""
 
-    default: List[str] = []
+    @property
+    def default(self) -> List[str]:
+        return []
 
     def validate(self, value):
         if not isinstance(value, list):
@@ -429,7 +441,9 @@ class ParamSchemaMultichartseries(NamedTuple):
     entire Dict if its Column is missing.
     """
 
-    default: List[Dict[str, str]] = []
+    @property
+    def default(self) -> List[Dict[str, str]]:
+        return []
 
     def validate(self, value):
         inner_schema = ParamSchemaDict(
@@ -455,7 +469,9 @@ class ParamSchemaFile(NamedTuple):
     The default, value, `null`, means "No file".
     """
 
-    default: Optional[str] = None
+    @property
+    def default(self) -> Optional[str]:
+        return None
 
     def validate(self, value):
         if value is None:

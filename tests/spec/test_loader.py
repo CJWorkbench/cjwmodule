@@ -459,3 +459,28 @@ def test_param_schema_explicit():
             )
         }
     )
+
+
+def test_param_schema_includes_empty_tuples():
+    # Bug on 2021-04-21: empty NamedTuple ParamSchema classes evaluate to
+    # False; but they should still be included in the param_schema.
+    spec = load_spec(
+        dict(
+            id_name="x",
+            name="x",
+            category="Clean",
+            parameters=[
+                dict(id_name="timezone", name="timezone", type="timezone"),
+                dict(id_name="tab", name="tab", type="tab"),
+                dict(id_name="condition", type="condition"),
+            ],
+        )
+    )
+
+    assert spec.param_schema == ParamSchema.Dict(
+        {
+            "timezone": ParamSchema.Timezone(),
+            "tab": ParamSchema.Tab(),
+            "condition": ParamSchema.Condition(),
+        }
+    )

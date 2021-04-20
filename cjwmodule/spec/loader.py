@@ -241,7 +241,11 @@ def load_spec(jsonish: Dict[str, Any]) -> ModuleSpec:
     else:
         # Usual case: infer schema from module parameter types
         param_schema = ParamSchema.Dict(
-            {f.id_name: f.to_schema() for f in param_fields if f.to_schema()}
+            {
+                f.id_name: f.to_schema()
+                for f in param_fields
+                if f.to_schema() is not None
+            }
         )
 
     return ModuleSpec(
