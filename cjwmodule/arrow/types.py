@@ -7,6 +7,19 @@ from ..types import RenderError
 __all__ = ["ArrowRenderResult"]
 
 
+class TabOutput(NamedTuple):
+    """Output from a different tab, to be used as input into a render function."""
+
+    tab_name: str
+    """Name of the tab.
+
+    This is used in, e.g., concattabs for adding a "Source" column.
+    """
+
+    table: pa.Table
+    """Table data."""
+
+
 class ArrowRenderResult(NamedTuple):
     """Return value from a `def render_arrow_v1()`.
 

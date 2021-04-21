@@ -7,6 +7,7 @@ These are `typing.NamedTuple` because:
 * We like to see their `repr()` in assertions and debugging sessions.
 """
 
+import datetime
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Union
 
@@ -83,3 +84,19 @@ class FetchResult(NamedTuple):
     fetch() file. This `errors` field is merely a convenient tool for a common
     pattern: it will be passed to render() as `fetch_result.errors`.
     """
+
+
+class UploadedFile(NamedTuple):
+    """File uploaded by the user."""
+
+    name: str
+    """Name as the user uploaded it.
+
+    This is an "unsafe" value: it could point to, say, `/etc/passwd`.
+    """
+
+    path: Path
+    """Filename on disk containing the data."""
+
+    uploaded_at: datetime.datetime
+    """Moment when the user finished uploading the file, in UTC."""

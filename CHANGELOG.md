@@ -1,3 +1,9 @@
+v4.1.6 - 2021-04-21
+-------------------
+
+* Add `cjwmodule.types.UploadedFile`
+* Add `cjwmodule.arrow.types.TabOutput`
+
 v4.1.5 - 2021-04-21
 -------------------
 
