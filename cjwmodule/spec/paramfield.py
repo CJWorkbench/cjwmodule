@@ -550,7 +550,9 @@ class ParamFieldList(_HasName, ParamField):
     # override
     def to_schema(self) -> Optional[ParamSchema]:
         child_schemas = {
-            cp.id_name: cp.to_schema() for cp in self.child_parameters if cp.to_schema()
+            cp.id_name: cp.to_schema()
+            for cp in self.child_parameters
+            if cp.to_schema() is not None
         }
         return ParamSchema.List(ParamSchema.Dict(child_schemas))
 

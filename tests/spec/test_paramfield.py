@@ -26,7 +26,7 @@ def test_bool_radio_default_false():
     assert param_spec.to_schema().default is False
 
 
-def test_list_dtype():
+def test_list_schema():
     # Check that ParamField's with List type produce correct nested DTypes
     param_spec = ParamField.from_dict(
         dict(
@@ -50,6 +50,21 @@ def test_list_dtype():
         ParamSchema.Dict(
             {"intparam": ParamSchema.Integer(), "colparam": ParamSchema.Column()}
         )
+    )
+
+
+def test_list_schema_with_falsy_params():
+    # Bug on 2021-04-21: a ParamSchema.Condition() evaluates to False (it is
+    # an empty tuple), but it should still appear in the condition list.
+    field = ParamField.List(
+        id_name="p",
+        child_parameters=[
+            ParamField.Condition(id_name="cond"),
+            ParamField.Statictext(id_name="static", name="Static"),
+        ],
+    )
+    assert field.to_schema() == ParamSchema.List(
+        ParamSchema.Dict({"cond": ParamSchema.Condition()})
     )
 
 
