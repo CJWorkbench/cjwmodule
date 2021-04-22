@@ -221,6 +221,12 @@ def test_cell_is_empty_number():
     _assert_condition_mask({"A": pa.array([1, 2, None])}, CELL("is_empty", "A"), "001")
 
 
+def test_cell_is_empty_date():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date.today(), None])}, CELL("is_empty", "A"), "01"
+    )
+
+
 def test_cell_is_empty_timestamp():
     _assert_condition_mask(
         {"A": pa.array([datetime.datetime.now(), None], pa.timestamp("ns"))},
@@ -243,6 +249,14 @@ def test_cell_is_empty_text_dictionary():
 
 def test_cell_is_null_number():
     _assert_condition_mask({"A": [1, 2, None]}, CELL("is_null", "A"), "001")
+
+
+def test_cell_is_null_date32():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date.today(), None])},
+        CELL("is_null", "A"),
+        "01",
+    )
 
 
 def test_cell_is_null_timestamp():
@@ -425,6 +439,57 @@ def test_timestamp_is_before_or_equals():
             )
         },
         TIMESTAMP("is_before_or_equals", "A", "2020-01-01T11:11"),
+        "110",
+    )
+
+
+def test_date32_is():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date(2020, 1, 1), datetime.date(2020, 1, 2), None])},
+        TIMESTAMP("is", "A", "2020-01-01"),
+        "100",
+    )
+
+
+def test_date32_is_with_timezone():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date(2020, 1, 1), datetime.date(2020, 1, 2), None])},
+        # Date is truncated
+        TIMESTAMP("is", "A", "2020-01-01T05:00:00.000000001+05:00"),
+        "100",
+    )
+
+
+def test_date32_after():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date(2020, 1, 1), datetime.date(2020, 1, 2), None])},
+        TIMESTAMP("is_after", "A", "2020-01-01"),
+        "010",
+    )
+
+
+def test_date32_after_or_equals():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date(2020, 1, 1), datetime.date(2020, 1, 2), None])},
+        TIMESTAMP("is_after_or_equals", "A", "2020-01-01"),
+        "110",
+    )
+
+
+def test_date32_is_before():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date(2020, 1, 1), datetime.date(2020, 1, 2), None])},
+        # Date in condition is truncated
+        TIMESTAMP("is_before", "A", "2020-01-02T11:11"),
+        "100",
+    )
+
+
+def test_date32_is_before_or_equals():
+    _assert_condition_mask(
+        {"A": pa.array([datetime.date(2020, 1, 1), datetime.date(2020, 1, 2), None])},
+        # Date in condition is truncated
+        TIMESTAMP("is_before_or_equals", "A", "2020-01-02T11:11"),
         "110",
     )
 

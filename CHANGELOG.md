@@ -2,6 +2,7 @@ v4.1.8 - 2021-04-22
 -------------------
 
 * `cjwmodule.arrow.format`: add `format_date_array()`
+* `cjwmodule.arrow.condition`: allow "timestamp" comparators for date32
 
 v4.1.7 - 2021-04-21
 -------------------

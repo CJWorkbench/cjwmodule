@@ -342,6 +342,24 @@ def _number_condition_to_mask(
     return pa.compute.fill_null(compared, False)
 
 
+def _parse_date32(value: str) -> pa.scalar:
+    with warnings.catch_warnings():
+        # numpy warns with DeprecationWarning when converting timezone offsets
+        # to UTC. Even though converting timezone offsets to UTC is obviously
+        # what everybody wants.
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        return pa.scalar(np.datetime64(value, "D").astype(int), pa.date32())
+
+
+def _parse_timestamp(value: str) -> pa.scalar:
+    with warnings.catch_warnings():
+        # numpy warns with DeprecationWarning when converting timezone offsets
+        # to UTC. Even though converting timezone offsets to UTC is obviously
+        # what everybody wants.
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        return pa.scalar(np.datetime64(value, "ns"), pa.timestamp("ns"))
+
+
 def _timestamp_condition_to_mask(
     table, operation: str, *, column: str, value: str
 ) -> pa.ChunkedArray:
@@ -352,13 +370,13 @@ def _timestamp_condition_to_mask(
         "timestamp_is_before": pa.compute.less,
         "timestamp_is_before_or_equals": pa.compute.less_equal,
     }[operation]
-    with warnings.catch_warnings():
-        # numpy warns with DeprecationWarning when converting timezone offsets
-        # to UTC. Even though converting timezone offsets to UTC is obviously
-        # what everybody wants.
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-        timestamp_value = pa.scalar(np.datetime64(value, "ns"))
-    compared = func(table[column], timestamp_value)
+
+    field = table.schema.field(column)
+    if pa.types.is_date32(field.type):
+        compared_value = _parse_date32(value)
+    else:
+        compared_value = _parse_timestamp(value)
+    compared = func(table[column], compared_value)
     return pa.compute.fill_null(compared, False)
 
 
