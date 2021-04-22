@@ -3,11 +3,13 @@ import codecs
 import datetime
 import io
 import math
-import sys
+import time
 from string import Formatter
-from typing import Callable, Iterator, NewType, Optional, Union
+from typing import Callable, Iterator, Literal, NewType, Optional, Union
 
 import pyarrow as pa
+
+DateUnit = Literal["day", "week", "month", "quarter", "year"]
 
 __all__ = [
     "parse_number_format",
@@ -130,8 +132,6 @@ def format_number_array(arr: pa.Array, fn: NumberFormatter) -> pa.Array:
     # valid_buf: bitset of "valid" integers. valid_buf[(1 << i)] is 1 when
     # the ith entry in arr is set; it's 0 when the ith entry in arr is pa.NULL.
     valid_buf, num_buf = arr.buffers()
-    if sys.byteorder != "little":
-        raise NotImplementedError("TODO reverse endianness")
     for detect, struct_format in [
         (pa.types.is_uint8, "B"),
         (pa.types.is_uint16, "H"),
@@ -148,7 +148,7 @@ def format_number_array(arr: pa.Array, fn: NumberFormatter) -> pa.Array:
         if detect(arr.type):
             break
     else:
-        raise TypeError("Unknown array type %r" % arr.type)
+        raise TypeError("Unknown array type %r" % arr.type)  # pragma: no cover
 
     if valid_buf is None:
         # HACK: give the same interface as PyArrow bitmap buffer.
@@ -195,9 +195,6 @@ def format_number_array(arr: pa.Array, fn: NumberFormatter) -> pa.Array:
         out_valid8s.append(out_valid8)
 
     out_offsets.append(offset)
-
-    if sys.byteorder != "little":
-        out_offsets.byteswap()
 
     return pa.StringArray.from_buffers(
         length=len(arr),
@@ -253,8 +250,7 @@ def _num_iter(
     valid_buf: Optional[pa.Buffer], nums: memoryview
 ) -> Iterator[Optional[Union[int, float]]]:
     if valid_buf is None:
-        for num in nums:
-            yield num
+        yield from nums
     else:
         num_iter = iter(nums)
         # valid_buf is a bitset: 8 numbers per byte.
@@ -274,21 +270,17 @@ def _num_iter(
 
 
 def format_timestamp_array(arr: pa.Array) -> pa.Array:
-    """
-    Build a PyArrow utf8 array from a timestamp array.
+    """Build a PyArrow utf8 array from a timestamp array.
 
     The output Array will have the same length as the input.
 
     The output Array will consume RAM using two new, contiguous buffers.
 
-    The format will be ISO8601, as precise as needed. TODO allow a format()
-    function argument.
+    The format will be ISO8601, as precise as needed.
     """
     valid_buf, num_buf = arr.buffers()
-    if sys.byteorder != "little":
-        raise NotImplementedError("TODO reverse endianness")
     if arr.type.unit != "ns":
-        raise NotImplementedError("TODO handle non-ns")
+        raise NotImplementedError("TODO handle non-ns")  # pragma: no cover
 
     nums = memoryview(num_buf).cast("l")  # l = int64
     num_iter = _num_iter(valid_buf, nums)
@@ -301,14 +293,86 @@ def format_timestamp_array(arr: pa.Array) -> pa.Array:
         # At each number, output the _start_ offset of that number
         out_offsets.append(offset)
         if num is not None:
-            formatted, _ = codecs.readbuffer_encode(_ns_to_iso8601(num))
+            formatted, n = codecs.readbuffer_encode(_ns_to_iso8601(num))
             out_utf8.write(formatted)
-            offset += len(formatted)
+            offset += n
 
     out_offsets.append(offset)
 
-    if sys.byteorder != "little":
-        out_offsets.byteswap()
+    return pa.StringArray.from_buffers(
+        length=len(arr),
+        value_offsets=pa.py_buffer(out_offsets.tobytes()),
+        data=pa.py_buffer(bytes(out_utf8.getbuffer())),
+        null_bitmap=valid_buf,
+        null_count=arr.null_count,
+    )
+
+
+def format_date_array(arr: pa.Array, unit: DateUnit) -> pa.Array:
+    """Build a PyArrow utf8 array from a date32 array.
+
+    The output Array will have the same length as the input.
+
+    The output Array will consume RAM using two new, contiguous buffers.
+
+    Formats (for date "2022-08-01", a Monday):
+
+    * day: "2022-08-01"
+    * week: "2022-08-01"
+    * month: "2022-08"
+    * quarter: "2022 Q3"
+    * year: "2022"
+
+    The format will be ISO8601, as precise as needed.
+    """
+    valid_buf, num_buf = arr.buffers()
+    nums = memoryview(num_buf).cast("i")  # i = int32
+    num_iter = _num_iter(valid_buf, nums)
+
+    offset = 0
+    out_offsets = array.array("I")  # uint32
+    out_utf8 = io.BytesIO()
+
+    # date32 allows negative years; Python `datetime.date` doesn't. Don't use
+    # datetime.date.
+    if unit == "year":
+
+        def _format(day: int) -> str:
+            return str(time.gmtime(86400 * day).tm_year)
+
+    elif unit == "quarter":
+
+        def _format(day: int) -> str:
+            st = time.gmtime(86400 * day)
+            return str(st.tm_year) + " Q" + str((st.tm_mon + 2) // 3)
+
+    elif unit == "month":
+
+        def _format(day: int) -> str:
+            st = time.gmtime(86400 * day)
+            return str(st.tm_year) + "-" + str(st.tm_mon).zfill(2)
+
+    else:
+
+        def _format(day: int) -> str:
+            st = time.gmtime(86400 * day)
+            return (
+                str(st.tm_year)
+                + "-"
+                + str(st.tm_mon).zfill(2)
+                + "-"
+                + str(st.tm_mday).zfill(2)
+            )
+
+    for num in num_iter:
+        # At each number, output the _start_ offset of that number
+        out_offsets.append(offset)
+        if num is not None:
+            formatted, n = codecs.readbuffer_encode(_format(num))
+            out_utf8.write(formatted)
+            offset += n
+
+    out_offsets.append(offset)
 
     return pa.StringArray.from_buffers(
         length=len(arr),

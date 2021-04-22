@@ -5,6 +5,7 @@ import pyarrow as pa
 import pytest
 
 from cjwmodule.arrow.format import (
+    format_date_array,
     format_number_array,
     format_timestamp_array,
     parse_number_format,
@@ -72,6 +73,17 @@ def test_format_float():
     assert f(1.234567) == "1.23"
     assert f(125899906842624.09) == "125,899,906,842,624.09"  # float64
     assert f(1.235) == "1.24"  # round
+
+
+def test_format_typeerror():
+    with pytest.raises(TypeError):
+        parse_number_format(b"{:,}")
+
+
+def test_format_suffix():
+    f = parse_number_format("{:,d} cows")
+    assert f(2) == "2 cows"
+    assert f(1234) == "1,234 cows"
 
 
 def test_format_int8_array():
@@ -191,3 +203,47 @@ def test_format_timestamp_no_valid_buf():
     valid_buf, num_buf = arr.buffers()
     scary_arr = pa.Array.from_buffers(arr.type, len(arr), [None, num_buf], 0, 0)
     assert format_timestamp_array(scary_arr).to_pylist() == ["2010-01-01"]
+
+
+def test_format_date_day():
+    assert format_date_array(
+        pa.array([datetime.date(2010, 1, 1), datetime.date(1900, 11, 30), None]), "day"
+    ).to_pylist() == ["2010-01-01", "1900-11-30", None]
+
+
+def test_format_date_no_valid_buf():
+    arr = pa.array([datetime.date(2010, 1, 1), datetime.date(1900, 11, 30)])
+    valid_buf, num_buf = arr.buffers()
+    scary_arr = pa.Array.from_buffers(arr.type, len(arr), [None, num_buf], 0, 0)
+    assert format_date_array(scary_arr, "day").to_pylist() == [
+        "2010-01-01",
+        "1900-11-30",
+    ]
+
+
+def test_format_date_week():
+    assert format_date_array(
+        pa.array([datetime.date(2021, 4, 19), None]), "week"
+    ).to_pylist() == ["2021-04-19", None]
+
+
+def test_format_date_month():
+    assert format_date_array(
+        pa.array([datetime.date(2021, 4, 1), datetime.date(1950, 12, 1), None]), "month"
+    ).to_pylist() == ["2021-04", "1950-12", None]
+
+
+def test_format_date_quarter():
+    assert (
+        format_date_array(
+            pa.array([datetime.date(2021, 4, 1), datetime.date(1950, 10, 1), None]),
+            "quarter",
+        ).to_pylist()
+        == ["2021 Q2", "1950 Q4", None]
+    )
+
+
+def test_format_date_year():
+    assert format_date_array(
+        pa.array([datetime.date(2021, 1, 1), datetime.date(1950, 1, 1), None]), "year"
+    ).to_pylist() == ["2021", "1950", None]
