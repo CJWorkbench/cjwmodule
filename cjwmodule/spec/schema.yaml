@@ -83,8 +83,9 @@ definitions:
                 description: "List of allowed input column types. Workbench will not invoke the module with wrong-type columns."
                 items:
                     oneOf:
-                      - const: text
+                      - const: date
                       - const: number
+                      - const: text
                       - const: timestamp
         # _common: use Yaml "anchors" so we can reuse common JSON in all our types.
         # (They tend to use many similar properties, but not all.) JSON Schema has
