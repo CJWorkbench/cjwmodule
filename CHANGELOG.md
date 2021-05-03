@@ -1,3 +1,9 @@
+v4.1.10 - 2021-05-03
+--------------------
+
+* `cjwmodule.arrow.dictionary.recode_or_decode_dictionary()` - help modules
+  trim columns' dictionaries so Workbench will accept them.
+
 v4.1.9 - 2021-04-27
 -------------------
 
