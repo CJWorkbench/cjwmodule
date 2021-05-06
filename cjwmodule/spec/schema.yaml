@@ -196,7 +196,6 @@ definitions:
                                 value:
                                     type: string
                                     description: Value the module code uses
-                                    pattern: "^[a-z_][a-z0-9_]*$"
                                 label:
                                     type: string
                                     description: Text the user sees
@@ -222,7 +221,6 @@ definitions:
                                 oneOf:
                                   - type: string
                                     description: Value the module code uses
-                                    pattern: "^[a-z_][a-z0-9_]*$"
                                   - type: boolean
                                     description: Value the module code uses
                             label:

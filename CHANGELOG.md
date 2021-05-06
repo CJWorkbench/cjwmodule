@@ -1,3 +1,8 @@
+v4.1.12 - 2021-05-06
+--------------------
+
+* Allow menu/radio option values to be any String.
+
 v4.1.11 - 2021-05-04
 --------------------
 
